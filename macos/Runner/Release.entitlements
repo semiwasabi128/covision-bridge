@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- [小葵 2026-08-01] 關閉 App Sandbox -->
+	<!-- 沙盒開啟時每次重新簽名 rebuild 都會讓 macOS 重彈權限對話框 -->
+	<!-- 關閉後 ad-hoc 簽名的 app 不再受 TCC 每次詢問的困擾 -->
+	<key>com.apple.security.app-sandbox</key>
+	<false/>
+
+	<!-- 網路 -->
+	<key>com.apple.security.network.client</key>
+	<true/>
+	<key>com.apple.security.network.server</key>
+	<true/>
+
+	<!-- 檔案存取（無沙盒下其實不需要，但保留相容性） -->
+	<key>com.apple.security.files.user-selected.read-only</key>
+	<true/>
+	<key>com.apple.security.files.user-selected.read-write</key>
+	<true/>
+
+	<!-- 硬體 -->
+	<key>com.apple.security.device.audio-input</key>
+	<true/>
+
+	<!-- 特殊能力 -->
+	<key>com.apple.security.cs.disable-library-validation</key>
+	<true/>
+	<key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+	<true/>
+	<key>com.apple.security.accessibility-events</key>
+	<true/>
+	<key>com.apple.security.screen-recording</key>
+	<true/>
+	<!-- [小葵 2026-08-02] 恢復 removable-volumes entitlement -->
+	<!-- macOS 26 (Tahoe) 需要這個 entitlement 才會在「檔案和檔案夾」設定顯示 toggle -->
+	<!-- 沒有它 macOS 仍然會問，但不會出現在設定清單讓使用者授權 -->
+	<!-- 配合 Full Disk Access + 手動允許一次 = 永久不再問 -->
+	<key>com.apple.security.files.removable-volumes</key>
+	<true/>
+
+	<!-- 外接硬碟存取（DB + 原始碼 + 農場資料都在 /Volumes/DATA） -->
+	<key>com.apple.security.temporary-exception.files.absolute-path.read-write</key>
+	<array>
+		<string>/Volumes/DATA/</string>
+	</array>
+
+	<!-- Keychain -->
+	<key>com.apple.security.keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)farm.semiwasabi.bridgeApp</string>
+	</array>
+</dict>
+</plist>

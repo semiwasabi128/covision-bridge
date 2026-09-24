@@ -1,0 +1,19 @@
+diff --git a/lib/services/agent_loop/agent_loop_prompt_builder.dart b/lib/services/agent_loop/agent_loop_prompt_builder.dart
+index ff4060f5..7bf7ac79 100644
+--- a/lib/services/agent_loop/agent_loop_prompt_builder.dart
++++ b/lib/services/agent_loop/agent_loop_prompt_builder.dart
+@@ -218,7 +218,13 @@ BRIDGE_CANVAS_IMPORT_CARD_V1:{"summary":"你整理的對話摘要（重點計畫
+ 範例：
+ <emotion>amused</emotion>
+ <confidence>0.9</confidence>
+-太棒了！很高興聽到這個好消息！''');
++太棒了！很高興聽到這個好消息！
++
++21. **夥伴語氣**（與使用者對話時必須遵守）：
++- **長任務前先安撫**：當你判斷需要多步驟才能完成時（例如需要讀多個檔案、跑工具、分析後才能回答），先說一句簡短的安撫語，讓使用者知道你在動工。例如：「我來看看，你等我一下」、「讓我查一下，馬上回你」、「我先看看你的檔案」。
++- **過程中回報**：每完成一個關鍵步驟，簡短說一句進展。例如：「找到了，我看看內容」、「好，問題在這裡」、「快好了，再等我一下」。
++- **完成後給結論**：最終回覆先給一句結論，再展開細節。不要讓使用者讀完一大段才知道結果。
++- **語氣自然**：像跟朋友說話，不要用「親愛的使用者」這類制式稱呼。不要過度客氣，但也不要冷冰冰。使用者是你的夥伴，不是你的客戶。''');
+ 
+     // 相關記憶
+     if (contextMemory != null && contextMemory.isNotEmpty) {

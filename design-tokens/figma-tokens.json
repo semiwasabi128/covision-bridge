@@ -1,0 +1,412 @@
+{
+  "global": {
+    "colors": {
+      "canvas": {
+        "value": "#07080A",
+        "type": "color"
+      },
+      "surface": {
+        "value": "#101111",
+        "type": "color"
+      },
+      "surfaceElevated": {
+        "value": "#1B1C1E",
+        "type": "color"
+      },
+      "surfaceHover": {
+        "value": "#252829",
+        "type": "color"
+      },
+      "textPrimary": {
+        "value": "#F9F9F9",
+        "type": "color"
+      },
+      "textSecondary": {
+        "value": "#CECECE",
+        "type": "color"
+      },
+      "textTertiary": {
+        "value": "#9C9C9D",
+        "type": "color"
+      },
+      "textMuted": {
+        "value": "#6A6B6C",
+        "type": "color"
+      },
+      "textQuaternary": {
+        "value": "#434345",
+        "type": "color"
+      },
+      "accentRed": {
+        "value": "#FF6363",
+        "type": "color"
+      },
+      "accentBlue": {
+        "value": "#55B3FF",
+        "type": "color"
+      },
+      "accentGreen": {
+        "value": "#5FC992",
+        "type": "color"
+      },
+      "accentYellow": {
+        "value": "#FFBC33",
+        "type": "color"
+      },
+      "accentPurple": {
+        "value": "#533AFD",
+        "type": "color"
+      },
+      "accentNavy": {
+        "value": "#061B31",
+        "type": "color"
+      },
+      "accentMagenta": {
+        "value": "#F96BEE",
+        "type": "color"
+      },
+      "accentRuby": {
+        "value": "#EA2261",
+        "type": "color"
+      },
+      "accentMiro": {
+        "value": "#5B76FE",
+        "type": "color"
+      },
+      "borderSubtle": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "borderDefault": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "borderStrong": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "surfaceGlass": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "surfaceGlassHover": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "particle1": {
+        "value": "#533AFD",
+        "type": "color"
+      },
+      "particle2": {
+        "value": "#F96BEE",
+        "type": "color"
+      },
+      "particle3": {
+        "value": "#55B3FF",
+        "type": "color"
+      },
+      "particle4": {
+        "value": "#5FC992",
+        "type": "color"
+      },
+      "particleGlow": {
+        "value": "#533AFD",
+        "type": "color"
+      },
+      "tagSuccessBg": {
+        "value": "#0E1B12",
+        "type": "color"
+      },
+      "tagSuccessFg": {
+        "value": "#B8E8CC",
+        "type": "color"
+      },
+      "tagErrorBg": {
+        "value": "#1B0E0E",
+        "type": "color"
+      },
+      "tagErrorFg": {
+        "value": "#FFADAD",
+        "type": "color"
+      },
+      "tagInfoBg": {
+        "value": "#0E151B",
+        "type": "color"
+      },
+      "tagInfoFg": {
+        "value": "#B3DCFF",
+        "type": "color"
+      },
+      "tagBrainBg": {
+        "value": "#0E0A1B",
+        "type": "color"
+      },
+      "tagBrainFg": {
+        "value": "#B9B9F9",
+        "type": "color"
+      },
+      "tagWarnBg": {
+        "value": "#1B160E",
+        "type": "color"
+      },
+      "tagWarnFg": {
+        "value": "#FFD580",
+        "type": "color"
+      },
+      "softGreen": {
+        "value": "#81C784",
+        "type": "color"
+      },
+      "toolPurple": {
+        "value": "#7C4DFF",
+        "type": "color"
+      },
+      "toolPurpleLight": {
+        "value": "#B388FF",
+        "type": "color"
+      },
+      "errorRed": {
+        "value": "#EF5350",
+        "type": "color"
+      },
+      "lightBlue": {
+        "value": "#42A5F5",
+        "type": "color"
+      },
+      "teal": {
+        "value": "#4ECDC4",
+        "type": "color"
+      },
+      "slate": {
+        "value": "#8E9AAF",
+        "type": "color"
+      },
+      "deepPurple": {
+        "value": "#7C89FF",
+        "type": "color"
+      },
+      "fileBlue": {
+        "value": "#4A9EFF",
+        "type": "color"
+      },
+      "sopOrange": {
+        "value": "#FFB454",
+        "type": "color"
+      },
+      "pinkAccent": {
+        "value": "#FF6B9D",
+        "type": "color"
+      },
+      "darkPanel": {
+        "value": "#1E1E2E",
+        "type": "color"
+      },
+      "darkCanvas": {
+        "value": "#0D0D1A",
+        "type": "color"
+      },
+      "successGreen": {
+        "value": "#6B8E6B",
+        "type": "color"
+      },
+      "hintPurple": {
+        "value": "#8888AA",
+        "type": "color"
+      },
+      "hintPink": {
+        "value": "#CE93D8",
+        "type": "color"
+      },
+      "successDark": {
+        "value": "#2E7D32",
+        "type": "color"
+      },
+      "brightCyan": {
+        "value": "#00D4FF",
+        "type": "color"
+      },
+      "googleBlue": {
+        "value": "#1A73E8",
+        "type": "color"
+      },
+      "goldAccent": {
+        "value": "#FFD700",
+        "type": "color"
+      },
+      "alertRed": {
+        "value": "#FF1744",
+        "type": "color"
+      },
+      "infoBlue": {
+        "value": "#4A90D9",
+        "type": "color"
+      },
+      "red700": {
+        "value": "#D32F2F",
+        "type": "color"
+      },
+      "berlinRed": {
+        "value": "#C8102E",
+        "type": "color"
+      },
+      "bgLightRed": {
+        "value": "#FFF3F2",
+        "type": "color"
+      },
+      "bgLightGreen": {
+        "value": "#F1F8E9",
+        "type": "color"
+      },
+      "bgVeryLightRed": {
+        "value": "#FFF8F7",
+        "type": "color"
+      },
+      "lightGray": {
+        "value": "#E0E0E0",
+        "type": "color"
+      },
+      "orange500": {
+        "value": "#FF9800",
+        "type": "color"
+      },
+      "orange300": {
+        "value": "#FFB74D",
+        "type": "color"
+      },
+      "dividerIndigo": {
+        "value": "#2A2A4A",
+        "type": "color"
+      },
+      "textOnAccent": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "grey600": {
+        "value": "#757575",
+        "type": "color"
+      },
+      "grey700": {
+        "value": "#616161",
+        "type": "color"
+      },
+      "grey800": {
+        "value": "#424242",
+        "type": "color"
+      },
+      "grey400": {
+        "value": "#BDBDBD",
+        "type": "color"
+      },
+      "grey300": {
+        "value": "#E0E0E0",
+        "type": "color"
+      },
+      "red500": {
+        "value": "#F44336",
+        "type": "color"
+      },
+      "red400": {
+        "value": "#EF5350",
+        "type": "color"
+      },
+      "red700mat": {
+        "value": "#D32F2F",
+        "type": "color"
+      },
+      "green500": {
+        "value": "#4CAF50",
+        "type": "color"
+      },
+      "green700": {
+        "value": "#388E3C",
+        "type": "color"
+      },
+      "green400": {
+        "value": "#66BB6A",
+        "type": "color"
+      },
+      "blue500": {
+        "value": "#2196F3",
+        "type": "color"
+      },
+      "blue700": {
+        "value": "#1976D2",
+        "type": "color"
+      },
+      "orangeStd": {
+        "value": "#FF9800",
+        "type": "color"
+      },
+      "orange700": {
+        "value": "#F57C00",
+        "type": "color"
+      }
+    },
+    "fontSizes": {
+      "cardBody": {
+        "value": 14,
+        "type": "fontSizes"
+      },
+      "cardTitle": {
+        "value": 16,
+        "type": "fontSizes"
+      },
+      "cardHeroTitle": {
+        "value": 20,
+        "type": "fontSizes"
+      },
+      "cardCaption": {
+        "value": 12,
+        "type": "fontSizes"
+      },
+      "appDisplayLarge": {
+        "value": 32,
+        "type": "fontSizes"
+      }
+    },
+    "fontWeights": {
+      "400": {
+        "value": 400,
+        "type": "fontWeights"
+      },
+      "500": {
+        "value": 500,
+        "type": "fontWeights"
+      },
+      "600": {
+        "value": 600,
+        "type": "fontWeights"
+      },
+      "700": {
+        "value": 700,
+        "type": "fontWeights"
+      },
+      "bold": {
+        "value": "bold",
+        "type": "fontWeights"
+      }
+    },
+    "letterSpacing": {
+      "cardBody": {
+        "value": 0.2,
+        "type": "letterSpacing"
+      },
+      "cardTitle": {
+        "value": 0.3,
+        "type": "letterSpacing"
+      },
+      "cardHeroTitle": {
+        "value": 0.4,
+        "type": "letterSpacing"
+      },
+      "cardCaption": {
+        "value": 0.1,
+        "type": "letterSpacing"
+      },
+      "appDisplayLarge": {
+        "value": 0.5,
+        "type": "letterSpacing"
+      }
+    }
+  }
+}

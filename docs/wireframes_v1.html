@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>橋樑 App Wireframes v1 — 真實程式碼線框圖</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    font-family: -apple-system, 'SF Pro Text', 'Noto Sans TC', sans-serif;
+    color: #333;
+    padding: 40px 20px;
+    min-width: 1280px;
+  }
+  h1 {
+    color: #e0e0e0;
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .subtitle {
+    color: #888;
+    text-align: center;
+    font-size: 13px;
+    margin-bottom: 40px;
+  }
+  .screens-row {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+  }
+  .screen-container {
+    flex-shrink: 0;
+  }
+  .screen-label {
+    color: #ccc;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .screen-label .source {
+    font-size: 11px;
+    color: #777;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  .phone-frame {
+    width: 390px;
+    height: 844px;
+    background: #f5f5f5;
+    border: 3px solid #444;
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+  }
+  /* Notch */
+  .phone-frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 24px;
+    background: #444;
+    border-radius: 0 0 18px 18px;
+    z-index: 100;
+  }
+  .screen-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .screen-content::-webkit-scrollbar { width: 4px; }
+  .screen-content::-webkit-scrollbar-thumb { background: #aaa; border-radius: 2px; }
+
+  /* ── Wireframe Components ── */
+  .wf-appbar {
+    background: #e8e8e8;
+    padding: 36px 16px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #ccc;
+    min-height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .wf-appbar-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    flex: 1;
+  }
+  .wf-appbar-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .wf-icon-btn {
+    width: 32px;
+    height: 32px;
+    background: #ddd;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #666;
+    flex-shrink: 0;
+  }
+  .wf-icon-btn.small { width: 28px; height: 28px; font-size: 12px; }
+
+  .wf-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .wf-card {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .wf-card.accent {
+    border-color: #8B7355;
+    border-width: 1.5px;
+  }
+  .wf-card.gradient {
+    background: linear-gradient(135deg, #f0ebe6, #e8e0d8);
+  }
+
+  .wf-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #444;
+    margin-bottom: 4px;
+  }
+  .wf-label.small { font-size: 11px; font-weight: 600; }
+  .wf-label.large { font-size: 15px; font-weight: 800; }
+
+  .wf-desc {
+    font-size: 11px;
+    color: #888;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .wf-textfield {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .wf-textfield-label {
+    font-size: 11px;
+    color: #777;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .wf-textfield-hint {
+    font-size: 11px;
+    color: #aaa;
+  }
+
+  .wf-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1.5px solid #8B7355;
+    color: #8B7355;
+    background: transparent;
+  }
+  .wf-btn.filled {
+    background: #8B7355;
+    color: #fff;
+    border-color: #8B7355;
+  }
+  .wf-btn.outlined {
+    border-color: #8B7355;
+    color: #8B7355;
+    background: transparent;
+  }
+  .wf-btn-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .wf-btn-row .wf-btn { flex: 1; }
+  .wf-btn-full {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .wf-btn-full.filled { background: #8B7355; color: #fff; border: none; }
+  .wf-btn-full.outlined { border: 1.5px solid #8B7355; color: #8B7355; background: transparent; }
+
+  .wf-chip {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    border: 1px solid #8B7355;
+    color: #8B7355;
+    background: rgba(139,115,85,0.08);
+    margin: 2px;
+  }
+  .wf-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+
+  .wf-preset-grid {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .wf-preset-item {
+    flex: 1;
+    height: 48px;
+    border: 1.5px solid #8B7355;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #8B7355;
+    background: rgba(139,115,85,0.06);
+  }
+  .wf-preset-item.selected {
+    background: rgba(139,115,85,0.15);
+    border-width: 2px;
+  }
+
+  .wf-dropdown {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 8px;
+  }
+
+  .wf-switch-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .wf-switch {
+    width: 40px;
+    height: 22px;
+    background: #ccc;
+    border-radius: 12px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .wf-switch.on { background: #8B7355; }
+  .wf-switch::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: 0.2s;
+  }
+  .wf-switch.on::after { left: 20px; }
+
+  .wf-radio-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 13px;
+    color: #555;
+  }
+  .wf-radio {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #8B7355;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .wf-radio.selected { background: #8B7355; }
+
+  .wf-step-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+  }
+  .wf-step-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid #aaa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #aaa;
+    flex-shrink: 0;
+  }
+  .wf-step-circle.done {
+    background: #8B7355;
+    border-color: #8B7355;
+    color: #fff;
+  }
+
+  /* Conditional element — dashed */
+  .wf-conditional {
+    border: 2px dashed #c97c3a;
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 6px;
+  }
+  .wf-conditional-label {
+    font-size: 10px;
+    color: #c97c3a;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .wf-section-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #333;
+    margin-top: 8px;
+    margin-bottom: 6px;
+  }
+
+  .wf-divider {
+    height: 1px;
+    background: #ddd;
+    margin: 16px 0;
+  }
+
+  .wf-quest-step {
+    display: flex;
+    gap: 8px;
+    padding: 6px 0;
+    align-items: flex-start;
+  }
+  .wf-quest-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .wf-quest-icon.done { background: #8B7355; color: #fff; border-color: #8B7355; }
+  .wf-quest-icon.active { border-color: #8B7355; border-width: 2px; }
+  .wf-quest-title { font-size: 12px; font-weight: 700; color: #444; }
+  .wf-quest-detail { font-size: 10px; color: #888; }
+
+  .wf-annotation {
+    font-size: 10px;
+    color: #c97c3a;
+    font-style: italic;
+    margin-top: 4px;
+  }
+
+  .wf-dead-code {
+    border: 2px dashed #999;
+    background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 5px, #e5e5e5 5px, #e5e5e5 10px);
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+    color: #999;
+    font-size: 11px;
+  }
+
+  /* ── Chat-specific ── */
+  .wf-message {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 13px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  .wf-message.user {
+    align-self: flex-end;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-bottom-right-radius: 4px;
+  }
+  .wf-message.ai {
+    align-self: flex-start;
+    background: #f0ebe6;
+    border: 1px solid #d5cbbf;
+    border-bottom-left-radius: 4px;
+  }
+  .wf-message-list {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    flex: 1;
+    overflow-y: auto;
+  }
+  .wf-input-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid #ddd;
+    background: #f5f5f5;
+  }
+  .wf-input-field {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 22px;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: #aaa;
+  }
+  .wf-mic-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #8B7355;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .wf-send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #8B7355;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .wf-sidebar {
+    width: 100%;
+    background: #e8e8e8;
+    padding: 12px;
+  }
+  .wf-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    font-size: 13px;
+    color: #555;
+  }
+  .wf-sidebar-item.active {
+    background: rgba(139,115,85,0.12);
+    color: #8B7355;
+    font-weight: 700;
+  }
+
+  .wf-banner {
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .wf-banner.warning {
+    background: rgba(255,152,0,0.10);
+    border: 1px solid rgba(255,152,0,0.34);
+  }
+  .wf-banner.info {
+    background: rgba(139,115,85,0.08);
+    border: 1px solid rgba(139,115,85,0.20);
+  }
+  .wf-banner.green {
+    background: rgba(76,175,80,0.10);
+    border: 1px solid rgba(76,175,80,0.30);
+  }
+
+  .wf-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .wf-tag.ready { background: rgba(139,115,85,0.15); color: #8B7355; }
+  .wf-tag.pending { background: #eee; color: #999; }
+
+  .wf-note {
+    background: rgba(255,140,0,0.08);
+    border-left: 3px solid #FF8C00;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: #666;
+    margin: 6px 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .wf-component-tag {
+    display: inline-block;
+    font-size: 9px;
+    color: #999;
+    background: #f0f0f0;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  .wf-empty-state {
+    text-align: center;
+    padding: 40px 24px;
+  }
+  .wf-empty-icon {
+    font-size: 48px;
+    color: #ccc;
+    margin-bottom: 12px;
+  }
+
+  .wf-feedback-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+    align-items: center;
+  }
+  .wf-feedback-chip {
+    padding: 3px 8px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    font-size: 10px;
+    color: #888;
+  }
+  .wf-feedback-chip.selected {
+    border-color: #8B7355;
+    color: #8B7355;
+    background: rgba(139,115,85,0.12);
+  }
+
+  .wf-status-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #fff;
+    border: 1px solid #d5cbbf;
+    border-radius: 10px;
+    margin: 6px 0;
+    font-size: 11px;
+  }
+  .wf-status-strip .icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(139,115,85,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .wf-expansion {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .wf-expansion-header {
+    padding: 12px;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .wf-expansion-body {
+    padding: 12px;
+  }
+
+  .wf-table-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 12px;
+  }
+  .wf-table-row:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<h1>橋樑 App Wireframes v1</h1>
+<p class="subtitle">基於真實程式碼結構 · iPhone 390×844 · 灰階線框圖 · 2026-06-27</p>
+
+<div class="screens-row">
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- 畫面 1：創造夥伴 (companion_create_screen.dart) -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="screen-container">
+  <div class="screen-label">
+    畫面 1：創造夥伴
+    <div class="source">companion_create_screen.dart (4409 行)</div>
+  </div>
+  <div class="phone-frame">
+    <div class="screen-content">
+
+      <!-- AppBar -->
+      <div class="wf-appbar">
+        <div class="wf-icon-btn">←</div>
+        <div class="wf-appbar-title">創造第一位夥伴<span class="wf-component-tag">AppBar.title</span></div>
+      </div>
+      <div class="wf-annotation" style="padding:0 16px 4px;">title 條件切換：「創造第一位夥伴」/「調整夥伴設定」（條件：editingCompanionId != null）</div>
+
+      <div class="wf-body">
+
+        <!-- 1. RitualHeader -->
+        <div class="wf-card gradient">
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <div style="width:42px;height:42px;border-radius:50%;background:rgba(139,115,85,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">✨</div>
+            <div>
+              <div class="wf-label">輸入描述，創造你的 AI 夥伴</div>
+              <div class="wf-desc">像創造遊戲角色一樣，填寫靈感、功能、個性與畫風。你可以建立多位夥伴，他們共用同一個大腦架構與長期記憶，但各自有不同專長與說話方式。</div>
+            </div>
+          </div>
+        </div>
+        <div class="wf-annotation">① _buildRitualHeader()</div>
+
+        <!-- 2. SummonQuestBoard -->
+        <div class="wf-card">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(139,115,85,0.18);display:flex;align-items:center;justify-content:center;">🚩</div>
+            <div class="wf-label">建立任務進度</div>
+          </div>
+          <div class="wf-quest-step">
+            <div class="wf-quest-icon done">✓</div>
+            <div>
+              <div class="wf-quest-title">主形象</div>
+              <div class="wf-quest-detail">主形象已生成。</div>
+            </div>
+          </div>
+          <div class="wf-quest-step">
+            <div class="wf-quest-icon active">2</div>
+            <div>
+              <div class="wf-quest-title">狀態圖組</div>
+              <div class="wf-quest-detail">生成待機、閱讀、指路等狀態圖：0/6。</div>
+            </div>
+          </div>
+          <div class="wf-quest-step">
+            <div class="wf-quest-icon">3</div>
+            <div>
+              <div class="wf-quest-title">資產包</div>
+              <div class="wf-quest-detail">封存文字、主圖與狀態圖。</div>
+            </div>
+          </div>
+          <div class="wf-quest-step">
+            <div class="wf-quest-icon">4</div>
+            <div>
+              <div class="wf-quest-title">確定建立夥伴</div>
+              <div class="wf-quest-detail">完成前面任務後再定稿。</div>
+            </div>
+          </div>
+        </div>
+        <div class="wf-annotation">② _buildSummonQuestBoard() — 4 步驟進度條</div>
+
+        <!-- 3. ImageModelSelector -->
+        <div class="wf-card accent">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(139,115,85,0.12);">⚙</div>
+            <div>
+              <div class="wf-label">圖像版本</div>
+              <div class="wf-desc" style="margin:0;">gpt-image-1 · high</div>
+            </div>
+          </div>
+          <div class="wf-preset-grid">
+            <div class="wf-preset-item selected">gpt-image-1</div>
+            <div class="wf-preset-item">dall-e-3</div>
+            <div class="wf-preset-item">flux</div>
+          </div>
+          <div class="wf-desc" style="margin-top:6px;">高品質，細節最完整，適合角色設定圖。</div>
+        </div>
+        <div class="wf-annotation">③ _buildImageModelSelector() — 3 個圖像模型選項</div>
+
+        <!-- 4. ArchetypePresets -->
+        <div>
+          <div class="wf-label">選擇預設夥伴範本</div>
+          <div class="wf-desc">先選能力傾向，再用下面的線索調整成獨一無二的夥伴。</div>
+          <div class="wf-preset-grid">
+            <div class="wf-preset-item">🔮 理性秩序</div>
+            <div class="wf-preset-item">🎨 靈感創造</div>
+            <div class="wf-preset-item">✍ 表達共鳴</div>
+          </div>
+        </div>
+        <div class="wf-annotation">④ _buildArchetypePresets() — 3 個原型預設</div>
+
+        <!-- 5. ImportPackEntryPanel -->
+        <div class="wf-card" style="background:rgba(139,115,85,0.06);">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div style="width:30px;height:30px;border-radius:8px;background:rgba(139,115,85,0.10);">📥</div>
+            <div style="flex:1;">
+              <div class="wf-label small">已有角色資產包？</div>
+              <div class="wf-desc" style="margin:0;">先匯入社群分享或之前儲存的角色包，再繼續微調線索、圖片與設定。</div>
+            </div>
+            <div class="wf-btn outlined" style="padding:6px 10px;font-size:11px;">匯入角色資產包</div>
+          </div>
+        </div>
+        <div class="wf-annotation">⑤ _buildImportPackEntryPanel()</div>
+
+        <!-- 6. ReferenceImagePicker -->
+        <div class="wf-card">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+            <div style="width:30px;height:30px;border-radius:50%;background:rgba(139,115,85,0.10);">🖼</div>
+            <div style="flex:1;">
+              <div class="wf-label small">參考圖檔線索</div>
+              <div class="wf-desc" style="margin:0;">上傳既有角色、畫風或符號圖片，生成時會把它們當作 visual reference。</div>
+            </div>
+            <div class="wf-btn outlined" style="padding:6px 10px;font-size:11px;">上傳圖檔</div>
+          </div>
+          <!-- Conditional: reference images list -->
+          <div class="wf-conditional">
+            <div class="wf-conditional-label">（條件：_referenceImages.isNotEmpty 時顯示）</div>
+            <div style="font-size:11px;color:#999;">水平 ListView · 每張參考圖縮圖 + 名稱 + 來源 + 移除按鈕</div>
+          </div>
+        </div>
+        <div class="wf-annotation">⑥ _buildReferenceImagePicker()</div>
+
+        <!-- 7. ClueGrid — 11 TextFields -->
+        <div>
+          <div class="wf-label" style="margin-bottom:8px;">線索填寫區（11 個輸入框）</div>
+          <div class="wf-textfield">
+            <div class="wf-textfield-label">名字</div>
+            <div class="wf-textfield-hint">可留空，由生成結果命名</div>
+          </div>
+          <div class="wf-textfield">
+            <div class="wf-textfield-label">人物名人靈感</div>
+            <div class="wf-textfield-hint">像某種氣質、角色原型或傳說</div>
+          </div>
+          <div class="wf-textfield">
+            <div class="wf-textfield-label">特殊功能</div>
+            <div class="wf-textfield-hint">例如：替我開通新 AI 服務</div>
+          </div>
+          <div class="wf-textfield">
+            <div class="wf-textfield-label">說話風格</div>
+            <div class="wf-textfield-hint">溫暖短句、精準直接、幽默吐槽</div>
+          </div>
+          <div class="wf-textfield">
+            <div class="wf-textfield-label">個性</div>
+            <div class="wf-textfield-hint">好奇、可靠、搞笑、守護、冷靜</div>
+          </div>
+          <div class="wf-textfield">
+            <div class="wf-textfield-label">專長</div>
+            <div class="wf-textfield-hint">研究、寫作、工具導航、創意發想</div>
+          </div>
+          <div class="wf-textfield">
+            <div class="wf-textfield-label">習慣</div>
+            <div class="wf-textfield-hint">思考時發光、閒著會散步</div>
+          </div>
+          <div class="wf-textfield">
+            <div class="wf-textfield-label">與使用者的關係</div>
+            <div class="wf-textfield-hint">搭檔、朋友、守護者、小助理</div>
+          </div>
+          <div class="wf-textfield">
+            <div class="wf-textfield-label">畫風</div>
+            <div class="wf-textfield-hint">遊戲角色設定圖、2D 動畫、像素寵物</div>
+          </div>
+          <div class="wf-textfield">
+            <div class="wf-textfield-label">種族</div>
+            <div class="wf-textfield-hint">光靈、機械妖精、星塵使者</div>
+          </div>
+          <div class="wf-textfield" style="min-height:60px;">
+            <div class="wf-textfield-label">自由敘述</div>
+            <div class="wf-textfield-hint">任何你想保留的怪點子或設定</div>
+          </div>
+        </div>
+        <div class="wf-annotation">⑦ _buildClueGrid() — 11 個 TextField（名字/靈感/功能/說話風格/個性/專長/習慣/關係/畫風/種族/自由敘述）</div>
+
+        <!-- 8. RitualActions -->
+        <div>
+          <div class="wf-btn-row">
+            <div class="wf-btn outlined">🎲 隨機給我點子</div>
+            <div class="wf-btn filled">✨ 預覽草稿</div>
+          </div>
+          <div class="wf-btn outlined" style="width:100%;display:flex;padding:8px;">匯入角色資產包</div>
+        </div>
+        <div class="wf-annotation">⑧ _buildRitualActions() — 隨機給我點子 / 預覽草稿 / 匯入角色資產包</div>
+
+        <!-- 9. CandidateCard (conditional) -->
+        <div class="wf-conditional">
+          <div class="wf-conditional-label">⑨ _buildCandidateCard() （條件：_candidate != null 時顯示）</div>
+          <div class="wf-card accent" style="margin-top:6px;">
+            <div style="text-align:center;padding:20px;background:rgba(139,115,85,0.06);border-radius:8px;margin-bottom:8px;">
+              <div style="font-size:36px;">🧝</div>
+              <div class="wf-desc" style="margin-top:4px;">[角色主形象圖]</div>
+            </div>
+
+            <!-- Conditional: visualGenerationMessage -->
+            <div class="wf-conditional" style="margin:6px 0;">
+              <div class="wf-conditional-label">（條件：candidate.visualGenerationMessage != null）</div>
+              <div class="wf-desc" style="margin:0;">_buildVisualGenerationStatus()</div>
+            </div>
+
+            <!-- Conditional: generatedImagePath -->
+            <div class="wf-conditional" style="margin:6px 0;">
+              <div class="wf-conditional-label">（條件：candidate.generatedImagePath 非空）</div>
+              <div class="wf-desc" style="margin:0;">_buildPrimaryReviewStatus() + _buildBreathingControlPanel()</div>
+            </div>
+
+            <div class="wf-label large" style="margin-top:8px;">[候選名稱]</div>
+            <div class="wf-desc">ENFJ 主人翁 · 角色定位</div>
+            <div class="wf-desc">[外觀描述文字...]</div>
+
+            <div class="wf-note">_buildCandidateFlowGuide() → 呼叫 _buildSummonQuestBoard（elevated）</div>
+            <div class="wf-note">_buildSheetPreview() — 狀態圖預覽 + 「新增狀態圖」按鈕</div>
+
+            <div class="wf-card" style="background:rgba(139,115,85,0.06);margin:6px 0;">
+              <div class="wf-label small">📦 角色資產包</div>
+              <div class="wf-desc">角色資產包會保存主形象、狀態圖、觸發規則與角色 manifest。</div>
+              <div class="wf-btn-row">
+                <div class="wf-btn filled" style="font-size:11px;">匯出資產包檔案</div>
+                <div class="wf-btn outlined" style="font-size:11px;">匯入角色資產包</div>
+              </div>
+            </div>
+
+            <div class="wf-btn-row" style="margin-top:8px;">
+              <div class="wf-btn outlined">🔧 調整線索</div>
+              <div class="wf-btn outlined">🔄 重新生成</div>
+            </div>
+            <div class="wf-btn-full filled">✓ 確定建立夥伴</div>
+            <div class="wf-annotation" style="text-align:center;">按鈕文字條件切換：「確定建立夥伴」/「更新夥伴」</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- 畫面 2：設定 (settings_screen.dart) -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="screen-container">
+  <div class="screen-label">
+    畫面 2：設定
+    <div class="source">settings_screen.dart (2829 行)</div>
+  </div>
+  <div class="phone-frame">
+    <div class="screen-content">
+
+      <!-- AppBar -->
+      <div class="wf-appbar">
+        <div class="wf-icon-btn">←</div>
+        <div class="wf-appbar-title">設定</div>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- 1. SetupGuideCard -->
+        <div class="wf-card gradient">
+          <div class="wf-label large">跟著 3 步完成服務密碼設定</div>
+          <div class="wf-desc">先讓夥伴會聊天，再打開形象生成；本地 AI 下載可稍後再做，現在只需設定第一步。</div>
+          <div class="wf-step-row">
+            <div class="wf-step-circle done">✓</div>
+            <div>
+              <div class="wf-label small">設定主腦金鑰</div>
+              <div class="wf-desc" style="margin:0;">已設定</div>
+            </div>
+          </div>
+          <div class="wf-step-row">
+            <div class="wf-step-circle done">✓</div>
+            <div>
+              <div class="wf-label small">設定圖片生成金鑰</div>
+              <div class="wf-desc" style="margin:0;">已設定</div>
+            </div>
+          </div>
+          <div class="wf-step-row">
+            <div class="wf-step-circle">3</div>
+            <div>
+              <div class="wf-label small">本地模型</div>
+              <div class="wf-desc" style="margin:0;">尚未設定</div>
+            </div>
+          </div>
+        </div>
+        <div class="wf-annotation">① _buildSetupGuideCard() — 3 步驟引導</div>
+
+        <!-- 2. BrainKeySetupCard -->
+        <div class="wf-card accent">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div>
+              <div class="wf-label">🧠 1. AI 服務密碼（主腦）</div>
+              <div class="wf-desc" style="margin:0;">讓夥伴能聊天、判斷、整理上下文。</div>
+            </div>
+            <div class="wf-tag ready">已填入</div>
+          </div>
+
+          <!-- Conditional: local provider branch -->
+          <div class="wf-conditional" style="margin:6px 0;">
+            <div class="wf-conditional-label">（條件：_isLocalProvider == true 時，顯示本地模型分支）</div>
+            <div class="wf-btn-row">
+              <div class="wf-btn filled" style="font-size:11px;">管理本地模型</div>
+              <div class="wf-btn outlined" style="font-size:11px;">設定雲端備援</div>
+            </div>
+          </div>
+
+          <!-- Cloud provider branch (default shown) -->
+          <div class="wf-dropdown">
+            <span>選擇雲端服務</span>
+            <span>▼</span>
+          </div>
+          <div class="wf-desc">選項：Moonshot Kimi / OpenAI / Replicate / MiniMax / Claude / Gemini</div>
+
+          <div class="wf-textfield">
+            <div class="wf-textfield-label">Kimi 服務密碼（API Key）</div>
+            <div class="wf-textfield-hint">API token</div>
+          </div>
+
+          <div class="wf-note">還沒有 Kimi 的服務密碼？點此申請（橙色底線連結）</div>
+
+          <div class="wf-status-strip">
+            <div class="icon">🔌</div>
+            <div style="flex:1;">
+              <div class="wf-label small">測試連線狀態燈</div>
+              <div class="wf-desc" style="margin:0;">_buildProviderTestLight()</div>
+            </div>
+          </div>
+
+          <div class="wf-btn-row">
+            <div class="wf-btn outlined" style="font-size:11px;">測試主腦連線</div>
+            <div class="wf-btn filled" style="font-size:11px;">儲存金鑰</div>
+          </div>
+
+          <!-- Conditional: token filled -->
+          <div class="wf-conditional" style="margin:6px 0;">
+            <div class="wf-conditional-label">（條件：_tokenController.text 非空時顯示）</div>
+            <div class="wf-desc" style="margin:0;">_buildProviderSaveLight() + _buildAfterBrainKeyNextStep()</div>
+          </div>
+
+          <!-- Conditional: token filled + not first-summon -->
+          <div class="wf-conditional" style="margin:6px 0;">
+            <div class="wf-conditional-label">（條件：token 非空 且 returnTo 不含 'first-summon'）</div>
+            <div class="wf-btn outlined" style="width:100%;font-size:11px;">繼續設定步驟 →</div>
+          </div>
+
+          <div class="wf-desc" style="margin-top:4px;">一般情況只需要填這裡；Gateway URL 會自動使用所選服務的預設端點。</div>
+        </div>
+        <div class="wf-annotation">② _buildBrainKeySetupCard() — 雙分支：本地模型 / 雲端服務</div>
+
+        <!-- 3. CreativeKeySetupCard -->
+        <div class="wf-card accent">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div>
+              <div class="wf-label">🎨 2. 圖片生成金鑰</div>
+              <div class="wf-desc" style="margin:0;">用於創造第一位夥伴的造型圖與角色圖組。</div>
+            </div>
+            <div class="wf-tag ready">可用</div>
+          </div>
+
+          <div class="wf-status-strip">
+            <div class="icon">🖼</div>
+            <div style="flex:1;">
+              <div class="wf-label small">圖片生成狀態燈</div>
+              <div class="wf-desc" style="margin:0;">_buildImageGenerationLight(imageReady)</div>
+            </div>
+          </div>
+
+          <div class="wf-dropdown">
+            <span>選擇圖片生成服務</span>
+            <span>▼</span>
+          </div>
+          <div class="wf-desc">選項：OpenAI / Replicate / Google Gemini（下一批接入）</div>
+
+          <div class="wf-textfield">
+            <div class="wf-textfield-label">OpenAI 服務密碼（API Key）</div>
+            <div class="wf-textfield-hint">sk-...</div>
+          </div>
+
+          <div class="wf-status-strip">
+            <div class="icon">🔌</div>
+            <div style="flex:1;">
+              <div class="wf-label small">圖片金鑰測試狀態燈</div>
+              <div class="wf-desc" style="margin:0;">_buildImageKeyTestLight(option)</div>
+            </div>
+          </div>
+
+          <div class="wf-btn-row">
+            <div class="wf-btn outlined" style="font-size:11px;">測試圖片連線</div>
+            <div class="wf-btn filled" style="font-size:11px;">儲存圖片金鑰</div>
+          </div>
+
+          <!-- Conditional: imageKeySaved -->
+          <div class="wf-conditional" style="margin:6px 0;">
+            <div class="wf-conditional-label">（條件：imageKeySaved == true 時顯示）</div>
+            <div class="wf-desc" style="margin:0;">_buildImageKeySaveLight() + _buildAfterImageKeyNextStep()</div>
+          </div>
+        </div>
+        <div class="wf-annotation">③ _buildCreativeKeySetupCard()</div>
+
+        <!-- 4. LocalModelSetupCard -->
+        <div class="wf-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div>
+              <div class="wf-label">💾 3. 本地模型</div>
+              <div class="wf-desc" style="margin:0;">下載、選擇與啟動本地模型都在金鑰匙中心完成。</div>
+            </div>
+            <div class="wf-tag pending">前往設定</div>
+          </div>
+          <div class="wf-desc">這裡不需要手動填本地 URL。Bridge Desktop 會在金鑰匙中心帶你檢查硬體、下載合適模型，並設定本地主腦。</div>
+          <div class="wf-btn filled" style="font-size:11px;">前往本地模型設定</div>
+        </div>
+        <div class="wf-annotation">④ _buildLocalModelSetupCard()</div>
+
+        <!-- 5. AdvancedSettingsPanel -->
+        <div class="wf-expansion">
+          <div class="wf-expansion-header">
+            <span>⚙</span>
+            <span style="flex:1;">進階工程設定</span>
+            <span>▼</span>
+          </div>
+          <div class="wf-expansion-body" style="display:none;">
+            <div class="wf-desc">一般設定不需要打開；用於手動檢查端點、能力表與測試工具。</div>
+            <div class="wf-textfield">
+              <div class="wf-textfield-label">Gateway URL</div>
+              <div class="wf-textfield-hint">https://api.moonshot.cn/v1</div>
+            </div>
+            <div class="wf-note">_buildProviderConnectionPanel() — Provider 連線管理列表</div>
+            <div class="wf-note">_buildBridgeCapabilitiesCard() — 橋接能力卡</div>
+            <div class="wf-note">_buildProviderCapabilitiesTable() — Provider 能力表</div>
+            <div class="wf-note">_buildCapabilityHealthPanel() — 能力健康檢查</div>
+            <div class="wf-note">_buildImageBridgeTestPanel() — 圖片橋測試</div>
+            <div class="wf-status-strip">
+              <div class="icon">📦</div>
+              <div style="flex:1;">
+                <div class="wf-label small">語意上下文壓縮 v2</div>
+                <div class="wf-desc" style="margin:0;">長對話會先請 provider 整理任務狀態，再保留最近訊息繼續執行。</div>
+              </div>
+              <div class="wf-switch on"></div>
+            </div>
+          </div>
+        </div>
+        <div class="wf-annotation">⑤ _buildAdvancedSettingsPanel() — ExpansionTile（預設收合）</div>
+
+        <div class="wf-divider"></div>
+
+        <!-- 6. 電子夥伴 -->
+        <div class="wf-section-title">電子夥伴</div>
+        <div class="wf-card">
+          <div class="wf-btn-row">
+            <div class="wf-btn outlined" style="font-size:11px;">👥 夥伴列表</div>
+            <div class="wf-btn filled" style="font-size:11px;">+ 鍊成新夥伴</div>
+          </div>
+        </div>
+        <div class="wf-annotation">⑥ 電子夥伴區 — OutlinedButton「夥伴列表」+ ElevatedButton「鍊成新夥伴」</div>
+
+        <div class="wf-divider"></div>
+
+        <!-- 7. 安全設定 -->
+        <div class="wf-section-title">安全設定</div>
+        <div class="wf-card">
+          <div class="wf-switch-row">
+            <div>
+              <div class="wf-label small">啟用解鎖保護</div>
+              <div class="wf-desc" style="margin:0;">開啟 App 時需要驗證身分</div>
+            </div>
+            <div class="wf-switch"></div>
+          </div>
+
+          <!-- Conditional: authEnabled -->
+          <div class="wf-conditional" style="margin:6px 0;">
+            <div class="wf-conditional-label">（條件：_authEnabled == true 時顯示）</div>
+            <div class="wf-radio-item">
+              <div class="wf-radio selected"></div>
+              <span>生物識別（Face ID / 指紋）</span>
+            </div>
+            <div class="wf-radio-item">
+              <div class="wf-radio"></div>
+              <span>僅授權碼</span>
+            </div>
+            <div class="wf-radio-item">
+              <div class="wf-radio"></div>
+              <span>兩者皆可</span>
+            </div>
+            <div class="wf-textfield" style="margin-top:6px;">
+              <div class="wf-textfield-label">設定 6 位數授權碼</div>
+              <div class="wf-textfield-hint">••••••</div>
+            </div>
+          </div>
+        </div>
+        <div class="wf-annotation">⑦ 安全設定 — SwitchListTile + RadioGroup + TextField（條件顯示）</div>
+
+        <!-- 8. Save button -->
+        <div class="wf-btn-full filled" style="height:50px;font-size:16px;margin-top:16px;">儲存並開始使用</div>
+        <div class="wf-annotation">⑧ FilledButton「儲存並開始使用」（_isLoading 時顯示 CircularProgressIndicator）</div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- 畫面 3：對話主畫面 (chat_screen.dart) -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="screen-container">
+  <div class="screen-label">
+    畫面 3：對話主畫面
+    <div class="source">chat_screen.dart (8765 行)</div>
+  </div>
+  <div class="phone-frame">
+    <div class="screen-content" style="display:flex;flex-direction:column;overflow:hidden;">
+
+      <!-- AppBar -->
+      <div class="wf-appbar" style="flex-wrap:wrap;padding-top:36px;">
+        <div class="wf-icon-btn">☰</div>
+        <!-- AppBar Title -->
+        <div style="flex:1;display:flex;flex-direction:column;">
+          <div style="font-size:16px;font-weight:700;">橋樑<span class="wf-component-tag">_currentConversation?.title</span></div>
+          <div style="font-size:11px;color:#777;display:flex;align-items:center;gap:4px;">
+            <span>🟢</span>
+            <span>教練 Agent · 💬 閒聊</span>
+            <span style="font-size:14px;">▼</span>
+          </div>
+        </div>
+        <!-- Actions -->
+        <div class="wf-appbar-actions">
+          <!-- Conditional: local model badge -->
+          <div class="wf-conditional" style="padding:2px 6px;margin:0;border-width:1px;">
+            <div style="font-size:9px;color:#2E7D32;font-weight:600;">🖥️ 本地模型</div>
+          </div>
+          <!-- Conditional: totalTokens > 0 -->
+          <div class="wf-conditional" style="padding:2px 6px;margin:0;border-width:1px;">
+            <div style="font-size:9px;color:#777;">用量 1234</div>
+          </div>
+          <!-- Conditional: companions > 1 -->
+          <div class="wf-icon-btn small" title="切換／管理夥伴">🔧</div>
+          <!-- Brain / memory -->
+          <div class="wf-icon-btn small" title="長期記憶">🧠</div>
+          <!-- Project door -->
+          <div class="wf-icon-btn small" title="建立專案門">🚩</div>
+          <!-- Companion status test -->
+          <div class="wf-icon-btn small" title="夥伴狀態測試">🧪</div>
+          <!-- Settings -->
+          <div class="wf-icon-btn small" title="設定">⚙</div>
+        </div>
+      </div>
+      <div class="wf-annotation" style="padding:0 12px 4px;">
+        AppBar actions 條件：<br>
+        · 🖥️ 本地模型 badge（條件：_controller.isUsingLocalModel）<br>
+        · 用量 chip（條件：_totalTokens > 0）<br>
+        · 切換夥伴（條件：companions > 1）/ 建立夥伴（條件：companions == 1）<br>
+        · 🧠 長期記憶 · 🚩 專案門 · 🧪 夥伴狀態測試 · ⚙ 設定
+      </div>
+
+      <!-- 死代碼標記：Skill 快捷面板 -->
+      <div class="wf-dead-code" style="margin:4px 12px;">
+        ✗ 已排除（死代碼）：Skill 快捷面板（7 chip，_showSkillPanel 永遠 false）
+        <br>🔍 釐清需求 / 📝 產出規格 / 📋 拆解任務 / 🧪 測試驅動 / 🐛 系統除錯 / 🚀 快速驗證 / 🌍 全局視角
+      </div>
+
+      <!-- 死代碼標記：靈魂模式選擇器 -->
+      <div class="wf-dead-code" style="margin:4px 12px;">
+        ✗ 已排除（死代碼）：靈魂模式選擇器（5 模式）
+      </div>
+
+      <!-- 死代碼標記：_showMemoryOverlay 浮動卡 -->
+      <div class="wf-dead-code" style="margin:4px 12px;">
+        ✗ 已排除（死代碼）：_showMemoryOverlay 浮動卡（程式碼中不存在此方法）
+      </div>
+
+      <!-- Memory Flash (conditional — NOT excluded, this is _showMemoryFlash, different from _showMemoryOverlay) -->
+      <div class="wf-conditional" style="margin:4px 12px;">
+        <div class="wf-conditional-label">（條件：_showMemoryFlash && _memoryFlashText 非空）</div>
+        <div class="wf-banner green">
+          <span>💡</span>
+          <span style="font-size:12px;">[_memoryFlashText 內容]</span>
+        </div>
+      </div>
+
+      <!-- InlineWorkStatusPanel -->
+      <div class="wf-status-strip" style="margin:6px 12px;">
+        <div class="icon">🤖</div>
+        <div style="flex:1;">
+          <div class="wf-label small">桌面工作狀態 · 教練 Agent</div>
+          <div class="wf-desc" style="margin:0;">待命中｜idle｜好奇地看著你</div>
+        </div>
+        <div class="wf-icon-btn small">🧪</div>
+      </div>
+      <div class="wf-annotation" style="padding:0 12px;">_buildInlineWorkStatusPanel() — ValueListenableBuilder&lt;CompanionRuntimeState&gt;</div>
+
+      <!-- Conditional: PendingBridgeTaskBanner -->
+      <div class="wf-conditional" style="margin:4px 12px;">
+        <div class="wf-conditional-label">（條件：_pendingBridgeTask != null 時顯示）</div>
+        <div class="wf-banner warning">
+          <span>⚠</span>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:700;">待恢復任務：[task.title]</div>
+            <div style="font-size:11px;color:#888;">[task.request]</div>
+          </div>
+          <div class="wf-btn outlined" style="font-size:10px;padding:4px 8px;">放下</div>
+          <div class="wf-btn filled" style="font-size:10px;padding:4px 8px;">▶ 帶回輸入框</div>
+        </div>
+      </div>
+
+      <!-- Message List / Empty State -->
+      <div style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;">
+        <!-- Empty State (conditional) -->
+        <div class="wf-conditional">
+          <div class="wf-conditional-label">（條件：_currentConversation == null 或 messages 為空）</div>
+          <div class="wf-empty-state">
+            <div class="wf-empty-icon">💬</div>
+            <div style="font-size:14px;color:#999;margin-bottom:16px;">開始你的第一個對話</div>
+            <div class="wf-card accent" style="text-align:left;">
+              <div style="font-size:13px;color:#444;line-height:1.55;">👋 你好！我是你的 AI 助理。你可以問我任何事情，例如：</div>
+              <div class="wf-chip-row" style="margin-top:10px;">
+                <span class="wf-chip">幫我設定每天早上的提醒</span>
+                <span class="wf-chip">幫我搜尋最新消息</span>
+                <span class="wf-chip">幫我寫一封郵件草稿</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wf-annotation" style="margin:8px 0;">— 以下為有訊息時的 ListView.builder —</div>
+
+        <!-- AI message with feedback bar -->
+        <div class="wf-message ai">
+          這是夥伴的回覆內容...
+        </div>
+        <div class="wf-feedback-row" style="margin-left:12px;">
+          <span style="font-size:10px;color:#999;font-weight:800;">這輪回答</span>
+          <span class="wf-feedback-chip selected">✓ 準確</span>
+          <span class="wf-feedback-chip">⚠ 不準確</span>
+          <span class="wf-feedback-chip">🚫 先別採用</span>
+        </div>
+
+        <!-- User message -->
+        <div class="wf-message user">
+          這是使用者的訊息...
+        </div>
+
+        <!-- AI message with image -->
+        <div class="wf-message ai" style="padding:4px;">
+          <div style="background:#eee;border-radius:8px;width:100%;height:80px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#999;">[圖片 msg.imagePath]</div>
+          <div style="padding:8px;">圖片附帶的文字說明...</div>
+        </div>
+
+        <!-- AI message — Bridge Evidence Card (conditional parse) -->
+        <div class="wf-conditional" style="max-width:85%;">
+          <div class="wf-conditional-label">（條件：AI 回覆可解析為特殊卡片類型時顯示）</div>
+          <div style="font-size:10px;color:#888;line-height:1.6;">
+            可解析的卡片類型：<br>
+            · CapabilityAdvisorCard — 能力建議卡<br>
+            · ProjectDoorCard — 專案門卡<br>
+            · ProjectContextTransferCard — 專案脈絡轉移卡<br>
+            · DigitalAssetInvocationCard — 數位資產調用卡<br>
+            · DigitalAssetReusePlanCard — 數位資產重用計畫卡<br>
+            · ProjectForkCompleteCard — 專案分叉完成卡<br>
+            · ProjectForkIntroCard — 專案分叉介紹卡<br>
+            · DigitalAssetResultCard — 數位資產結果卡<br>
+            · ManagedFolderRulePickerCard — 資料夾規則選擇卡<br>
+            · CapabilityGapCard — 能力缺口卡
+          </div>
+        </div>
+      </div>
+      <div class="wf-annotation" style="padding:0 12px;">_buildMessageBubble() — 根據 msg.role + JSON parse 條件渲染 10+ 種卡片</div>
+
+      <!-- Conditional: Thinking Panel -->
+      <div class="wf-conditional" style="margin:4px 12px;">
+        <div class="wf-conditional-label">（條件：_isLoading == true 時顯示）</div>
+        <div class="wf-card" style="padding:10px;">
+          <div style="font-size:12px;color:#8B7355;font-weight:700;">🧠 AgentActivityPanel</div>
+          <div class="wf-desc" style="margin:4px 0;">stage: understanding → planning → executing<br>telemetry: tokens, bridge actions, attachments</div>
+          <div style="display:flex;gap:4px;">
+            <span class="wf-chip" style="font-size:10px;padding:3px 8px;">理解中...</span>
+            <span class="wf-chip" style="font-size:10px;padding:3px 8px;background:#8B7355;color:#fff;">規劃中</span>
+            <span class="wf-chip" style="font-size:10px;padding:3px 8px;">執行中</span>
+          </div>
+        </div>
+      </div>
+      <div class="wf-annotation" style="padding:0 12px;">_buildThinkingPanel() — AgentActivityPanel（條件：_isLoading）</div>
+
+      <!-- Conditional: Brain Reflection Dock -->
+      <div class="wf-conditional" style="margin:4px 12px;">
+        <div class="wf-conditional-label">（條件：!_isLoading && (_brainReflection != null || messages 非空) 時顯示）</div>
+        <div class="wf-card" style="padding:8px;">
+          <div style="font-size:11px;color:#666;">
+            <strong>_buildBrainReflectionDock()</strong><br>
+            收合狀態：「顯示判斷線索」按鈕<br>
+            展開狀態：BrainReflectionPanel（判斷線索面板）
+          </div>
+        </div>
+      </div>
+      <div class="wf-annotation" style="padding:0 12px;">_buildBrainReflectionDock() — 收合/展開切換</div>
+
+      <!-- Conditional: Pinned Brain Status Strip -->
+      <div class="wf-conditional" style="margin:4px 12px;">
+        <div class="wf-conditional-label">（條件：_brainReflection != null 時顯示）</div>
+        <div class="wf-card" style="padding:8px;">
+          <div style="font-size:11px;color:#666;">_buildPinnedBrainStatusStrip() — 固定大腦狀態列</div>
+        </div>
+      </div>
+
+      <!-- Input Bar (ChatInputBar widget) -->
+      <div class="wf-input-bar">
+        <div class="wf-icon-btn" title="選擇圖片">🖼</div>
+        <div class="wf-input-field">輸入訊息，或貼上條列回答...</div>
+        <!-- Conditional: clear draft button -->
+        <div class="wf-conditional" style="display:inline;padding:0;border:none;margin:0;">
+          <div class="wf-conditional-label" style="font-size:8px;">（條件：輸入框有文字）</div>
+        </div>
+        <div class="wf-mic-btn" title="開始語音輸入">🎤</div>
+        <div class="wf-send-btn" title="送出">➤</div>
+      </div>
+      <div class="wf-annotation" style="padding:0 12px 4px;">ChatInputBar widget — 圖片按鈕 + TextField + 麥克風 + 送出<br>hint: 「輸入訊息，或貼上條列回答...」</div>
+
+      <!-- CompanionPresenceLayer (overlay) -->
+      <div class="wf-conditional" style="margin:4px 12px 8px;border-color:#6B8E6B;">
+        <div class="wf-conditional-label" style="color:#6B8E6B;">（覆蓋層：CompanionPresenceLayer — Stack 最上層）</div>
+        <div style="font-size:11px;color:#6B8E6B;">
+          顯示夥伴存在感浮層（條件：_showCompanionPresence == true）<br>
+          可切換顯示/隱藏
+        </div>
+      </div>
+
+      <!-- Sidebar (conditional — AnimatedContainer width 0/280) -->
+      <div class="wf-conditional" style="margin:4px 12px;">
+        <div class="wf-conditional-label">（條件：_showSidebar == true 時從左側展開 280px）</div>
+        <div class="wf-sidebar" style="margin-top:4px;">
+          <div class="wf-btn filled" style="width:100%;font-size:12px;">+ 新對話</div>
+          <div style="height:1px;background:#ccc;margin:8px 0;"></div>
+          <div class="wf-label small" style="color:#888;margin:4px 0;">🚩 專案門 (2)</div>
+          <div class="wf-sidebar-item active">🚩 專案A · 5 則訊息</div>
+          <div class="wf-sidebar-item">🚩 專案B · 3 則訊息</div>
+          <div class="wf-label small" style="color:#888;margin:8px 0 4px;">💬 一般對話 (3)</div>
+          <div class="wf-sidebar-item">💬 閒聊1 · 8 則訊息</div>
+          <div class="wf-sidebar-item">💬 閒聊2 · 2 則訊息</div>
+          <div class="wf-sidebar-item">💬 閒聊3 · 15 則訊息</div>
+        </div>
+      </div>
+      <div class="wf-annotation" style="padding:0 12px 8px;">ChatSidebar widget — AnimatedContainer 展開/收合</div>
+
+    </div>
+  </div>
+</div>
+
+</div><!-- end screens-row -->
+
+</body>
+</html>

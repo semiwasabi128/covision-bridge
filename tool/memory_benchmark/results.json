@@ -1,0 +1,175 @@
+{
+  "run_at": "2026-09-23T04:43:02.731645",
+  "golden_set_version": 1,
+  "corpus_size": 32,
+  "query_count": 25,
+  "vector_usable": false,
+  "vector_note": "EmbeddingService（TFLite via flutter_gemma）在純 Dart CLI 環境不可用 → MemoryRetrievalPipeline 向量路徑未測（標 N/A），只測 FTS5 路徑。corpus 的 embedding 欄位存 null（誠實不造假）。",
+  "metrics": {
+    "pipeline_vector": {
+      "recall@1": 0.0,
+      "recall@5": 0.0,
+      "recall@10": 0.0,
+      "mrr": 0.0,
+      "note": "N/A — vectorUsable=false"
+    },
+    "hybrid_fts": {
+      "recall@1": 0.52,
+      "recall@5": 0.52,
+      "recall@10": 0.52,
+      "mrr": 0.52
+    }
+  },
+  "per_query": [
+    {
+      "query": "我喜歡喝什麼飲料？",
+      "note": "偏好類",
+      "pipeline_rank": null,
+      "fts_rank": 1
+    },
+    {
+      "query": "我有什麼飲食禁忌？",
+      "note": "偏好+健康 多重期望",
+      "pipeline_rank": null,
+      "fts_rank": null
+    },
+    {
+      "query": "我住在哪個城市？",
+      "note": "事實類（新版）",
+      "pipeline_rank": null,
+      "fts_rank": 1
+    },
+    {
+      "query": "我的貓叫什麼名字？",
+      "note": "事實類",
+      "pipeline_rank": null,
+      "fts_rank": null
+    },
+    {
+      "query": "我的生日是什麼時候？",
+      "note": "事實類",
+      "pipeline_rank": null,
+      "fts_rank": 1
+    },
+    {
+      "query": "我的工作是做什麼的？",
+      "note": "事實類",
+      "pipeline_rank": null,
+      "fts_rank": 1
+    },
+    {
+      "query": "小夏 什麼時候要交設計稿？",
+      "note": "多人稱",
+      "pipeline_rank": null,
+      "fts_rank": 1
+    },
+    {
+      "query": "阿川 對 CI 有什麼想法？",
+      "note": "多人稱",
+      "pipeline_rank": null,
+      "fts_rank": null
+    },
+    {
+      "query": "小菲 用什麼工具管理行程？",
+      "note": "多人稱",
+      "pipeline_rank": null,
+      "fts_rank": null
+    },
+    {
+      "query": "明天有什麼行程？",
+      "note": "暫時事實",
+      "pipeline_rank": null,
+      "fts_rank": null
+    },
+    {
+      "query": "這週五晚上要做什麼？",
+      "note": "暫時事實",
+      "pipeline_rank": null,
+      "fts_rank": 1
+    },
+    {
+      "query": "主機續約是什麼時候？",
+      "note": "暫時事實",
+      "pipeline_rank": null,
+      "fts_rank": 1
+    },
+    {
+      "query": "我現在用什麼手機？",
+      "note": "舊新版本—應命中新",
+      "pipeline_rank": null,
+      "fts_rank": null
+    },
+    {
+      "query": "我現在在哪個城市工作？",
+      "note": "舊新版本—應命中新",
+      "pipeline_rank": null,
+      "fts_rank": null
+    },
+    {
+      "query": "橋樑計劃的畫布是怎麼實作的？",
+      "note": "專案事實",
+      "pipeline_rank": null,
+      "fts_rank": 1
+    },
+    {
+      "query": "農場日記幾點發 Discord？",
+      "note": "專案事實",
+      "pipeline_rank": null,
+      "fts_rank": 1
+    },
+    {
+      "query": "IG 週報圖卡怎麼產出？",
+      "note": "專案事實",
+      "pipeline_rank": null,
+      "fts_rank": 1
+    },
+    {
+      "query": "我有什麼過敏原？",
+      "note": "健康事實",
+      "pipeline_rank": null,
+      "fts_rank": null
+    },
+    {
+      "query": "我的腰最近怎麼了？",
+      "note": "健康事實",
+      "pipeline_rank": null,
+      "fts_rank": null
+    },
+    {
+      "query": "我喜歡聽什麼音樂？",
+      "note": "偏好類",
+      "pipeline_rank": null,
+      "fts_rank": 1
+    },
+    {
+      "query": "假日都去哪裡運動？",
+      "note": "偏好類",
+      "pipeline_rank": null,
+      "fts_rank": null
+    },
+    {
+      "query": "我不能吃什麼？",
+      "note": "偏好類",
+      "pipeline_rank": null,
+      "fts_rank": null
+    },
+    {
+      "query": "我最喜歡的電影是哪部？",
+      "note": "偏好類",
+      "pipeline_rank": null,
+      "fts_rank": 1
+    },
+    {
+      "query": "我的貓是什麼花色？",
+      "note": "事實類",
+      "pipeline_rank": null,
+      "fts_rank": null
+    },
+    {
+      "query": "Blue 喜歡淺色還是深色介面？",
+      "note": "多人稱偏好",
+      "pipeline_rank": null,
+      "fts_rank": 1
+    }
+  ]
+}

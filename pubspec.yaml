@@ -1,0 +1,117 @@
+name: bridge_app
+description: "橋樑計畫 - 個人 AI 入口"
+publish_to: 'none'
+version: 0.2.0+1
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  
+  # 網路與 API
+  dio: ^5.8.0
+
+  # SemiDAO — 密碼學雜湊+簽章
+  crypto: ^3.0.7
+  
+  # 安全儲存 + 生物識別
+  flutter_secure_storage: ^9.2.4
+  local_auth: ^2.3.0
+  local_auth_android: ^1.0.48
+  local_auth_darwin: ^1.4.0
+  
+  # 本地儲存（簡化版）
+  shared_preferences: ^2.5.3
+  
+  # 導航與 UI
+  go_router: ^14.8.1
+  flutter_markdown: ^0.7.7
+  intl: ^0.20.2
+  flutter_localizations:
+    sdk: flutter
+  
+  # 對話記憶 + 照片
+  uuid: ^4.5.1
+  file_picker: ^9.2.3
+  path_provider: ^2.1.5
+  path: ^1.9.0
+  pdf: ^3.11.3
+  
+  # Web JS 通訊（自動化測試橋接）
+  js: ^0.6.7
+  speech_to_text: ^7.4.0
+  flutter_tts: ^4.2.0
+  url_launcher: ^6.3.1
+  archive: ^4.0.9
+  wakelock_plus: ^1.2.0
+  image: ^4.0.0
+
+  # 大腦容器 — 向量資料庫
+  sqlite3: ^3.0.0
+  sqlite_vector: ^1.0.0
+
+  # 大腦容器 — on-device 嵌入模型（EmbeddingGemma 300M via LiteRT）
+  flutter_gemma: ^1.0.1
+  flutter_gemma_embeddings: ^1.0.1
+
+  # Sprint 15a — QR 配對
+  qr_flutter: ^4.1.0
+  media_kit: ^1.1.11
+  media_kit_video: ^1.2.5
+  media_kit_libs_macos_video: ^1.1.4
+  mobile_scanner: ^7.0.0
+
+  # Sprint 19b — 瀏覽器自動化（puppeteer Dart 套件，純 Dart CDP 控制 Chrome）
+  puppeteer: ^3.25.1
+
+  # SemiDAO — 區塊鏈錢包連接 + ABI encoding
+  reown_appkit: ^1.8.3
+  web3dart: ^3.0.3
+
+  # [教練 Agent 2026-07-24] P4: 系統列圖示 + 視窗管理
+  tray_manager: ^0.4.0
+  window_manager: ^0.4.3
+
+  # MCP HTTP server
+  shelf: ^1.4.2
+  shelf_router: ^1.1.4
+  desktop_drop: ^0.7.1
+  flutter_inappwebview: ^6.1.5
+  video_player: ^2.14.0
+  video_player_macos: ^2.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+dependency_overrides:
+  # sqlite_vector 1.0.0 鎖 hooks ^1.0.0，flutter_gemma_embeddings 要 ^2.0.0。
+  # hooks 2.0.0 向後相容 1.x（同為 Dart native assets build hooks 協議）。
+  hooks: ^2.0.0
+  google_fonts: ^6.2.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/galaxy/
+    - assets/skills/
+    - assets/icons/
+    - assets/theme_packs/
+    - assets/companions/xiaoqiao/
+    - assets/companions/mimemi/
+  fonts:
+    - family: BridgeCJK
+      fonts:
+        # [開源整備 2026-09-21] BridgeCJK 家族改用 Noto Sans TC（SIL OFL）。
+        # 舊 BridgeCJK.ttf 實為 Arial Unicode MS（Monotype 商用授權），不可散佈，
+        # 已移至 assets/fonts/_retired/ 僅留本機參考，絕不進 repo／發佈。
+        # family 名保留 BridgeCJK：全 App 引用（app_theme/bridge_design_system/
+        # bridge_media_store）零改動。
+        - asset: assets/fonts/NotoSansTC-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSansTC-Medium.ttf
+          weight: 500

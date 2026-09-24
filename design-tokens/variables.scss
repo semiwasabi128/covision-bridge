@@ -1,0 +1,113 @@
+// Bridge Design Tokens — CSS / SCSS Variables
+// 自動生成於 2026-08-06T01:31:03.565184
+// 用法: import 'variables.scss';
+
+// ── Brand Colors ──
+:root {
+  --bridge-canvas: 07080A;  // #07080A — rgb(7, 8, 10)
+  --bridge-surface: 101111;  // #101111 — rgb(16, 17, 17)
+  --bridge-surface-elevated: 1B1C1E;  // #1B1C1E — rgb(27, 28, 30)
+  --bridge-surface-hover: 252829;  // #252829 — rgb(37, 40, 41)
+  --bridge-text-primary: F9F9F9;  // #F9F9F9 — rgb(249, 249, 249)
+  --bridge-text-secondary: CECECE;  // #CECECE — rgb(206, 206, 206)
+  --bridge-text-tertiary: 9C9C9D;  // #9C9C9D — rgb(156, 156, 157)
+  --bridge-text-muted: 6A6B6C;  // #6A6B6C — rgb(106, 107, 108)
+  --bridge-text-quaternary: 434345;  // #434345 — rgb(67, 67, 69)
+  --bridge-accent-red: FF6363;  // #FF6363 — rgb(255, 99, 99)
+  --bridge-accent-blue: 55B3FF;  // #55B3FF — rgb(85, 179, 255)
+  --bridge-accent-green: 5FC992;  // #5FC992 — rgb(95, 201, 146)
+  --bridge-accent-yellow: FFBC33;  // #FFBC33 — rgb(255, 188, 51)
+  --bridge-accent-purple: 533AFD;  // #533AFD — rgb(83, 58, 253)
+  --bridge-accent-navy: 061B31;  // #061B31 — rgb(6, 27, 49)
+  --bridge-accent-magenta: F96BEE;  // #F96BEE — rgb(249, 107, 238)
+  --bridge-accent-ruby: EA2261;  // #EA2261 — rgb(234, 34, 97)
+  --bridge-accent-miro: 5B76FE;  // #5B76FE — rgb(91, 118, 254)
+  --bridge-border-subtle: FFFFFF;  // #FFFFFF — rgb(255, 255, 255)
+  --bridge-border-default: FFFFFF;  // #FFFFFF — rgb(255, 255, 255)
+  --bridge-border-strong: FFFFFF;  // #FFFFFF — rgb(255, 255, 255)
+  --bridge-surface-glass: FFFFFF;  // #FFFFFF — rgb(255, 255, 255)
+  --bridge-surface-glass-hover: FFFFFF;  // #FFFFFF — rgb(255, 255, 255)
+  --bridge-particle1: 533AFD;  // #533AFD — rgb(83, 58, 253)
+  --bridge-particle2: F96BEE;  // #F96BEE — rgb(249, 107, 238)
+  --bridge-particle3: 55B3FF;  // #55B3FF — rgb(85, 179, 255)
+  --bridge-particle4: 5FC992;  // #5FC992 — rgb(95, 201, 146)
+  --bridge-particle-glow: 533AFD;  // #533AFD — rgb(83, 58, 253)
+  --bridge-tag-success-bg: 0E1B12;  // #0E1B12 — rgb(14, 27, 18)
+  --bridge-tag-success-fg: B8E8CC;  // #B8E8CC — rgb(184, 232, 204)
+  --bridge-tag-error-bg: 1B0E0E;  // #1B0E0E — rgb(27, 14, 14)
+  --bridge-tag-error-fg: FFADAD;  // #FFADAD — rgb(255, 173, 173)
+  --bridge-tag-info-bg: 0E151B;  // #0E151B — rgb(14, 21, 27)
+  --bridge-tag-info-fg: B3DCFF;  // #B3DCFF — rgb(179, 220, 255)
+  --bridge-tag-brain-bg: 0E0A1B;  // #0E0A1B — rgb(14, 10, 27)
+  --bridge-tag-brain-fg: B9B9F9;  // #B9B9F9 — rgb(185, 185, 249)
+  --bridge-tag-warn-bg: 1B160E;  // #1B160E — rgb(27, 22, 14)
+  --bridge-tag-warn-fg: FFD580;  // #FFD580 — rgb(255, 213, 128)
+  --bridge-soft-green: 81C784;  // #81C784 — rgb(129, 199, 132)
+  --bridge-tool-purple: 7C4DFF;  // #7C4DFF — rgb(124, 77, 255)
+  --bridge-tool-purple-light: B388FF;  // #B388FF — rgb(179, 136, 255)
+  --bridge-error-red: EF5350;  // #EF5350 — rgb(239, 83, 80)
+  --bridge-light-blue: 42A5F5;  // #42A5F5 — rgb(66, 165, 245)
+  --bridge-teal: 4ECDC4;  // #4ECDC4 — rgb(78, 205, 196)
+  --bridge-slate: 8E9AAF;  // #8E9AAF — rgb(142, 154, 175)
+  --bridge-deep-purple: 7C89FF;  // #7C89FF — rgb(124, 137, 255)
+  --bridge-file-blue: 4A9EFF;  // #4A9EFF — rgb(74, 158, 255)
+  --bridge-sop-orange: FFB454;  // #FFB454 — rgb(255, 180, 84)
+  --bridge-pink-accent: FF6B9D;  // #FF6B9D — rgb(255, 107, 157)
+  --bridge-dark-panel: 1E1E2E;  // #1E1E2E — rgb(30, 30, 46)
+  --bridge-dark-canvas: 0D0D1A;  // #0D0D1A — rgb(13, 13, 26)
+  --bridge-success-green: 6B8E6B;  // #6B8E6B — rgb(107, 142, 107)
+  --bridge-hint-purple: 8888AA;  // #8888AA — rgb(136, 136, 170)
+  --bridge-hint-pink: CE93D8;  // #CE93D8 — rgb(206, 147, 216)
+  --bridge-success-dark: 2E7D32;  // #2E7D32 — rgb(46, 125, 50)
+  --bridge-bright-cyan: 00D4FF;  // #00D4FF — rgb(0, 212, 255)
+  --bridge-google-blue: 1A73E8;  // #1A73E8 — rgb(26, 115, 232)
+  --bridge-gold-accent: FFD700;  // #FFD700 — rgb(255, 215, 0)
+  --bridge-alert-red: FF1744;  // #FF1744 — rgb(255, 23, 68)
+  --bridge-info-blue: 4A90D9;  // #4A90D9 — rgb(74, 144, 217)
+  --bridge-red700: D32F2F;  // #D32F2F — rgb(211, 47, 47)
+  --bridge-berlin-red: C8102E;  // #C8102E — rgb(200, 16, 46)
+  --bridge-bg-light-red: FFF3F2;  // #FFF3F2 — rgb(255, 243, 242)
+  --bridge-bg-light-green: F1F8E9;  // #F1F8E9 — rgb(241, 248, 233)
+  --bridge-bg-very-light-red: FFF8F7;  // #FFF8F7 — rgb(255, 248, 247)
+  --bridge-light-gray: E0E0E0;  // #E0E0E0 — rgb(224, 224, 224)
+  --bridge-orange500: FF9800;  // #FF9800 — rgb(255, 152, 0)
+  --bridge-orange300: FFB74D;  // #FFB74D — rgb(255, 183, 77)
+  --bridge-divider-indigo: 2A2A4A;  // #2A2A4A — rgb(42, 42, 74)
+  --bridge-text-on-accent: FFFFFF;  // #FFFFFF — rgb(255, 255, 255)
+  --bridge-grey600: 757575;  // #757575 — rgb(117, 117, 117)
+  --bridge-grey700: 616161;  // #616161 — rgb(97, 97, 97)
+  --bridge-grey800: 424242;  // #424242 — rgb(66, 66, 66)
+  --bridge-grey400: BDBDBD;  // #BDBDBD — rgb(189, 189, 189)
+  --bridge-grey300: E0E0E0;  // #E0E0E0 — rgb(224, 224, 224)
+  --bridge-red500: F44336;  // #F44336 — rgb(244, 67, 54)
+  --bridge-red400: EF5350;  // #EF5350 — rgb(239, 83, 80)
+  --bridge-red700mat: D32F2F;  // #D32F2F — rgb(211, 47, 47)
+  --bridge-green500: 4CAF50;  // #4CAF50 — rgb(76, 175, 80)
+  --bridge-green700: 388E3C;  // #388E3C — rgb(56, 142, 60)
+  --bridge-green400: 66BB6A;  // #66BB6A — rgb(102, 187, 106)
+  --bridge-blue500: 2196F3;  // #2196F3 — rgb(33, 150, 243)
+  --bridge-blue700: 1976D2;  // #1976D2 — rgb(25, 118, 210)
+  --bridge-orange-std: FF9800;  // #FF9800 — rgb(255, 152, 0)
+  --bridge-orange700: F57C00;  // #F57C00 — rgb(245, 124, 0)
+
+  // ── Font Sizes ──
+  --bridge-font-cardBody: 14px;
+  --bridge-font-cardTitle: 16px;
+  --bridge-font-cardHeroTitle: 20px;
+  --bridge-font-cardCaption: 12px;
+  --bridge-font-appDisplayLarge: 32px;
+
+  // ── Font Weights ──
+  --bridge-font-weight-regular: 400;
+  --bridge-font-weight-medium: 500;
+  --bridge-font-weight-semibold: 600;
+  --bridge-font-weight-bold: 700;
+
+  // ── Spacing ──
+  --bridge-spacing-xs: 4px;
+  --bridge-spacing-sm: 8px;
+  --bridge-spacing-md: 16px;
+  --bridge-spacing-lg: 24px;
+  --bridge-spacing-xl: 32px;
+  --bridge-spacing-xxl: 48px;
+}

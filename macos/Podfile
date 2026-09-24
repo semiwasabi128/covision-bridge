@@ -1,0 +1,84 @@
+platform :osx, '11.0'
+
+# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+def flutter_root
+  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'ephemeral', 'Flutter-Generated.xcconfig'), __FILE__)
+  unless File.exist?(generated_xcode_build_settings_path)
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure \"flutter pub get\" is executed first"
+  end
+
+  File.foreach(generated_xcode_build_settings_path) do |line|
+    matches = line.match(/FLUTTER_ROOT\=(.*)/)
+    return matches[1].strip if matches
+  end
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Flutter-Generated.xcconfig, then run \"flutter pub get\""
+end
+
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+flutter_macos_podfile_setup
+
+target 'Runner' do
+  use_frameworks!
+
+  flutter_install_all_macos_pods File.dirname(File.realpath(__FILE__))
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
+end
+
+# [小葵 2026-07-25] LiteRT companion dylibs 修復
+#
+# 問題：flutter_gemma_embeddings 的 Native Assets hook 在 macOS 跳過
+#   companion dylibs（libGemmaModelConstraintProvider, libLiteRtMetalAccelerator），
+#   因為 install_name_tool headerpad 不足（#247）。
+#   LiteRtLm.dylib 相依這些 dylibs（@rpath/...），少了它們就 dlopen 失敗。
+#
+# 解法：在 post_install 和 build phase 裡自動複製 companion dylibs 到
+#   app bundle 的 Frameworks 目錄。支援 Debug 和 Release 兩種 configuration。
+#
+# 參考：flutter_gemma_embeddings README §Troubleshooting
+
+LITERT_COMPANION_DYLIBS = [
+  'libGemmaModelConstraintProvider.dylib',
+  'libLiteRtMetalAccelerator.dylib',
+].freeze
+
+def litert_cache_dir
+  File.expand_path('~/Library/Caches/flutter_gemma/native/macos_arm64')
+end
+
+def litert_copy_companions(frameworks_dir)
+  cache_dir = litert_cache_dir
+  return unless Dir.exist?(cache_dir) && Dir.exist?(frameworks_dir)
+
+  LITERT_COMPANION_DYLIBS.each do |dylib|
+    src = File.join(cache_dir, dylib)
+    dst = File.join(frameworks_dir, dylib)
+    if File.exist?(src) && !File.exist?(dst)
+      FileUtils.cp(src, dst)
+      puts "[Podfile] Copied #{dylib} → #{frameworks_dir}"
+    end
+  end
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_macos_build_settings(target)
+  end
+
+  # 嘗試複製 companion dylibs（Debug + Release 兩種 configuration）
+  ['Debug', 'Release'].each do |config|
+    frameworks_dir = File.join(installer.sandbox.root, '..', 'build', 'macos',
+      'Build', 'Products', config, 'bridge_app.app', 'Contents', 'Frameworks')
+    litert_copy_companions(frameworks_dir)
+  end
+end

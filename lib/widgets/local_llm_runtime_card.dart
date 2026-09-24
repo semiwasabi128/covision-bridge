@@ -1,0 +1,1605 @@
+// local_llm_runtime_card.dart
+// 本地 LLM 運行時卡片 — Bridge Runtime (llama.cpp) 下載、模型選擇、server 啟停
+// 建立日期: 2026-07-20 by AI Agent
+// 設計：BridgeDS 深色主題 + 硬體檢測 + 模型適配度標籤
+
+import 'dart:async';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import '../services/local_model_runtime_service.dart';
+import '../services/local_model_catalog_service.dart';
+import '../services/macos_desktop_shell_channel.dart';
+import '../theme/bridge_design_system.dart';
+import '../theme/tier.dart';
+import '../theme/tier_style.dart';
+import 'bridge_desktop_widgets.dart';
+
+class LocalLlmRuntimeCard extends StatefulWidget {
+  const LocalLlmRuntimeCard({super.key});
+
+  @override
+  State<LocalLlmRuntimeCard> createState() => _LocalLlmRuntimeCardState();
+}
+
+class _LocalLlmRuntimeCardState extends State<LocalLlmRuntimeCard> {
+  final _runtimeService = LocalModelRuntimeService();
+  final _catalogService = const LocalModelCatalogService();
+  final _desktopChannel = const MacosDesktopShellChannel();
+  final _dio = Dio();
+
+  BridgeLocalRuntimeState? _runtimeState;
+  LocalHardwareProfile? _hardwareProfile;
+  LocalModelPlan? _modelPlan;
+  bool _isLoading = true;
+  Timer? _pollTimer;
+  int _selectedModelIndex = 0; // 使用者選中的模型索引
+  bool _isSearching = false;
+  List<Map<String, dynamic>> _searchResults = [];
+  String _searchQuery = '';
+  Set<String> _installedModels = {}; // 已下載的模型 ID（掃描硬碟得出）
+  Map<String, int> _installedModelSizes = {}; // 模型 ID → 實際檔案大小（bytes）
+  Map<String, bool> _modelTestResults = {}; // 模型 ID → 測試是否通過
+  Map<String, String> _modelTestResponses = {}; // 模型 ID → 測試回應
+  Set<String> _candidateModels = {}; // 已加入候選列表的模型 ID
+  Set<String> _testingModels = {}; // 正在測試中的模型 ID
+  bool _parallelModeEnabled = false; // 多模型並行運算開關
+  String? _downloadingModelId; // 正在下載的模型 ID
+  List<Map<String, dynamic>> _trendingModels = []; // HuggingFace 動態熱門模型
+  bool _isLoadingTrending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadState();
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadState() async {
+    try {
+      var runtimeState = await _runtimeService.inspectBridgeRuntime();
+      final hardwareProfile = await _desktopChannel.hardwareProfile();
+      final modelPlan = _catalogService.buildPlan(hardware: hardwareProfile);
+
+      // [教練 Agent 2026-07-20] 掃描硬碟上的實際模型檔案（不靠記憶體）
+      await _scanInstalledModels();
+
+      // [教練 Agent 2026-07-20] 引擎未安裝時自動下載，使用者零摩擦
+      if (runtimeState.phase == BridgeLocalRuntimePhase.notInstalled) {
+        runtimeState = await _runtimeService.prepareBridgeRuntime();
+      }
+
+      if (mounted) {
+        setState(() {
+          _runtimeState = runtimeState;
+          _hardwareProfile = hardwareProfile;
+          _modelPlan = modelPlan;
+          _isLoading = false;
+          // 下載完成後標記為已安裝
+          if (_downloadingModelId != null &&
+              runtimeState.phase != BridgeLocalRuntimePhase.downloading) {
+            _installedModels.add(_downloadingModelId!);
+            _downloadingModelId = null;
+          }
+        });
+
+        // Start polling if downloading or starting
+        if (runtimeState.phase == BridgeLocalRuntimePhase.downloading ||
+            runtimeState.phase == BridgeLocalRuntimePhase.starting) {
+          _startPolling();
+        } else {
+          _stopPolling();
+        }
+
+        // [教練 Agent 2026-07-20] 引擎已安裝時，非同步拉取 HuggingFace 熱門 GGUF 模型
+        if (runtimeState.phase == BridgeLocalRuntimePhase.installed ||
+            runtimeState.phase == BridgeLocalRuntimePhase.running) {
+          _fetchTrendingModels();
+        }
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _startPolling() {
+    _stopPolling();
+    _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      _loadState();
+    });
+  }
+
+  void _stopPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = null;
+  }
+
+  Future<void> _handlePrimaryAction() async {
+    if (_runtimeState == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      BridgeLocalRuntimeState newState;
+
+      switch (_runtimeState!.primaryCommand) {
+        case BridgeLocalRuntimeCommand.prepareRuntime:
+          newState = await _runtimeService.prepareBridgeRuntime();
+          break;
+        case BridgeLocalRuntimeCommand.downloadModel:
+          final recommendations = _modelPlan?.recommendations ?? [];
+          if (recommendations.isEmpty || _selectedModelIndex >= recommendations.length) {
+            setState(() => _isLoading = false);
+            return;
+          }
+          setState(() => _downloadingModelId = recommendations[_selectedModelIndex].model.id);
+          newState = await _runtimeService.downloadModel(recommendations[_selectedModelIndex]);
+          break;
+        case BridgeLocalRuntimeCommand.startServer:
+          newState = await _runtimeService.startServer();
+          break;
+        case BridgeLocalRuntimeCommand.stopServer:
+        case BridgeLocalRuntimeCommand.deleteModel:
+        case BridgeLocalRuntimeCommand.testModel:
+          newState = await _runtimeService.stopServer();
+          break;
+        case BridgeLocalRuntimeCommand.status:
+          newState = await _runtimeService.inspectBridgeRuntime();
+          break;
+      }
+
+      if (mounted) {
+        setState(() {
+          _runtimeState = newState;
+          _isLoading = false;
+          if (_downloadingModelId != null && newState.phase != BridgeLocalRuntimePhase.downloading) {
+            _installedModels.add(_downloadingModelId!);
+            _downloadingModelId = null;
+          }
+        });
+
+        // Start polling if needed
+        if (newState.phase == BridgeLocalRuntimePhase.downloading ||
+            newState.phase == BridgeLocalRuntimePhase.starting) {
+          _startPolling();
+        }
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _downloadingModelId = null;
+        });
+      }
+    }
+  }
+
+  /// 下載指定模型（不影響選中的推薦模型）
+  Future<void> _downloadSpecificModel(LocalModelRecommendation recommendation) async {
+    setState(() {
+      _downloadingModelId = recommendation.model.id;
+      _isLoading = true;
+    });
+
+    try {
+      final newState = await _runtimeService.downloadModel(recommendation);
+      if (mounted) {
+        setState(() {
+          _runtimeState = newState;
+          _isLoading = false;
+          if (newState.phase != BridgeLocalRuntimePhase.downloading) {
+            _installedModels.add(recommendation.model.id);
+            _downloadingModelId = null;
+          }
+        });
+        if (newState.phase == BridgeLocalRuntimePhase.downloading) {
+          _startPolling();
+        }
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _downloadingModelId = null;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading && _runtimeState == null) {
+      return const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 狀態標籤列（標題由外層 BridgeCard 提供，這裡只顯示狀態）
+        if (_runtimeState != null)
+          Align(
+            alignment: Alignment.centerRight,
+            child: BridgeStatusTag(
+              label: _runtimeState!.phase.label,
+              type: _getStatusTagType(_runtimeState!.phase),
+            ),
+          ),
+        if (_runtimeState != null) const SizedBox(height: BridgeDS.spaceSM),
+        _buildHardwareInfo(),
+        const SizedBox(height: BridgeDS.spaceMD),
+        _buildRuntimeContent(),
+      ],
+    );
+  }
+
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        Icon(
+          Icons.memory,
+          color: BridgeDSColors.of(context).accentPurple,
+          size: 24,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            '本地 LLM 引擎',
+            style: TierStyle.of(context, Tier.cardTitle).toTextStyle().copyWith(fontWeight: FontWeight.bold,
+              color: BridgeDSColors.of(context).textPrimary,),
+          ),
+        ),
+        if (_runtimeState != null)
+          BridgeStatusTag(
+            label: _runtimeState!.phase.label,
+            type: _getStatusTagType(_runtimeState!.phase),
+          ),
+      ],
+    );
+  }
+
+  BridgeTagType _getStatusTagType(BridgeLocalRuntimePhase phase) {
+    switch (phase) {
+      case BridgeLocalRuntimePhase.notInstalled:
+        return BridgeTagType.info;
+      case BridgeLocalRuntimePhase.downloading:
+      case BridgeLocalRuntimePhase.starting:
+        return BridgeTagType.warn;
+      case BridgeLocalRuntimePhase.installed:
+        return BridgeTagType.info;
+      case BridgeLocalRuntimePhase.running:
+        return BridgeTagType.success;
+      case BridgeLocalRuntimePhase.failed:
+        return BridgeTagType.error;
+    }
+  }
+
+  Widget _buildHardwareInfo() {
+    if (_hardwareProfile == null) {
+      return Text(
+        '等待 Bridge Desktop 回報硬體資訊...',
+        style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted,),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: BridgeDSColors.of(context).surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: BridgeDSColors.of(context).borderDefault),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.computer,
+            color: BridgeDSColors.of(context).textTertiary,
+            size: 16,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '${_hardwareProfile!.chipLabel}${_hardwareProfile!.ramGb != null ? " · ${_hardwareProfile!.ramGb}GB RAM" : ""}',
+              style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textSecondary,),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRuntimeContent() {
+    if (_runtimeState == null) {
+      return Text(
+        '載入中...',
+        style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted,),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Title and detail
+        Text(
+          _runtimeState!.title,
+          style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(fontWeight: FontWeight.w600,
+            color: BridgeDSColors.of(context).textPrimary,),
+        ),
+        const SizedBox(height: 6),
+        // downloading 階段的 detail 由 _buildDownloadProgress 顯示，這裡不重複
+        if (_runtimeState!.phase != BridgeLocalRuntimePhase.downloading)
+          Text(
+            _runtimeState!.detail,
+            style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textSecondary,
+              height: 1.4,),
+          ),
+        const SizedBox(height: BridgeDS.spaceMD),
+
+        // [教練 Agent 2026-07-20] 多模型並行運算開關
+        // 依硬體 RAM 判斷：< 20GB 禁止，≥ 20GB 雙模型，≥ 30GB 三模型
+        if (_hardwareProfile != null && _candidateModels.length >= 2)
+          _buildParallelModeSwitch(),
+
+        // Primary action button — 只有在引擎相關階段才顯示
+        // installed/running 階段時隱藏（改由模型旁的按鈕操作）
+        // 例外：stopServer→installed 後 primaryCommand=startServer 時需顯示按鈕
+        if (_runtimeState!.primaryActionEnabled &&
+            (_runtimeState!.primaryCommand == BridgeLocalRuntimeCommand.startServer ||
+             (_runtimeState!.phase != BridgeLocalRuntimePhase.installed &&
+              _runtimeState!.phase != BridgeLocalRuntimePhase.running)))
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _isLoading ? null : _handlePrimaryAction,
+                icon: Icon(_getActionIcon(), size: 18),
+                label: Text(_runtimeState!.primaryActionLabel),
+                style: FilledButton.styleFrom(
+                  backgroundColor: BridgeDSColors.of(context).accentPurple,
+                  foregroundColor: BridgeDSColors.of(context).textPrimary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+        // Phase-specific content
+        if (_runtimeState!.phase == BridgeLocalRuntimePhase.downloading)
+          _buildDownloadProgress(),
+        if (_runtimeState!.phase == BridgeLocalRuntimePhase.installed)
+          _buildModelCatalog(),
+        if (_runtimeState!.phase == BridgeLocalRuntimePhase.running) ...[
+          _buildRunningInfo(),
+          const SizedBox(height: BridgeDS.spaceMD),
+          _buildModelCatalog(),
+        ],
+        if (_runtimeState!.phase == BridgeLocalRuntimePhase.failed)
+          _buildErrorInfo(),
+      ],
+    );
+  }
+
+  IconData _getActionIcon() {
+    switch (_runtimeState!.primaryCommand) {
+      case BridgeLocalRuntimeCommand.prepareRuntime:
+      case BridgeLocalRuntimeCommand.downloadModel:
+        return Icons.download;
+      case BridgeLocalRuntimeCommand.startServer:
+        return Icons.play_arrow;
+      case BridgeLocalRuntimeCommand.stopServer:
+      case BridgeLocalRuntimeCommand.deleteModel:
+      case BridgeLocalRuntimeCommand.testModel:
+        return Icons.stop;
+      case BridgeLocalRuntimeCommand.status:
+        return Icons.refresh;
+    }
+  }
+
+  Color _getActionColor() {
+    switch (_runtimeState!.primaryCommand) {
+      case BridgeLocalRuntimeCommand.stopServer:
+      case BridgeLocalRuntimeCommand.deleteModel:
+      case BridgeLocalRuntimeCommand.testModel:
+        return BridgeDSColors.of(context).accentRed;
+      case BridgeLocalRuntimeCommand.prepareRuntime:
+      case BridgeLocalRuntimeCommand.downloadModel:
+      case BridgeLocalRuntimeCommand.startServer:
+        return BridgeDSColors.of(context).accentPurple;
+      case BridgeLocalRuntimeCommand.status:
+        return BridgeDSColors.of(context).accentBlue;
+    }
+  }
+
+  Widget _buildDownloadProgress() {
+    final progress = _runtimeState!.progress;
+    final detail = _runtimeState!.detail;
+    // 從 detail 解析已下載位元組，或從 state 取 modelName/modelSize
+    final modelName = _runtimeState!.title;
+    // detail 格式："Qwen3.5-4B（約 2.52 GB）下載中，已取得 1.3 GB。"
+    // 嘗試從 detail 提取已下載大小
+    String downloadedStr = '';
+    String totalStr = '';
+    final match = RegExp(r'已取得\s*([\d.]+\s*[KMGT]?B?)').firstMatch(detail);
+    if (match != null) {
+      downloadedStr = match.group(1) ?? '';
+    }
+    final totalMatch = RegExp(r'（約\s*([\d.]+\s*[KMGT]?B?)）').firstMatch(detail);
+    if (totalMatch != null) {
+      totalStr = totalMatch.group(1) ?? '';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const SizedBox(
+              width: 16, height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '$modelName 下載中',
+                style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(fontWeight: FontWeight.w600,
+                  color: BridgeDSColors.of(context).textPrimary,),
+              ),
+            ),
+            // 已下載大小 / 總大小
+            if (downloadedStr.isNotEmpty || totalStr.isNotEmpty)
+              Text(
+                totalStr.isNotEmpty
+                    ? '$downloadedStr / $totalStr'
+                    : downloadedStr,
+                style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted,
+                  fontWeight: FontWeight.w500,),
+              ),
+          ],
+        ),
+        if (progress != null) ...[
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: progress, // [教練 Agent 2026-07-21] macOS 端 progress 是 0-1，直接使用
+                    minHeight: 8,
+                    backgroundColor: BridgeDSColors.of(context).surfaceHover,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      BridgeDSColors.of(context).accentPurple,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${(progress * 100).toStringAsFixed(1)}%', // [教練 Agent 2026-07-21] 0-1 轉百分比顯示
+                style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted,),
+              ),
+            ],
+          ),
+        ],
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: BridgeDSColors.of(context).accentYellow.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                color: BridgeDSColors.of(context).accentYellow,
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '下載中，請保持 Bridge Desktop 運行',
+                  style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(height: 1.4),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModelCatalog() {
+    if (_modelPlan == null) return const SizedBox.shrink();
+    final recommendations = _modelPlan!.recommendations;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '選擇模型',
+          style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(fontWeight: FontWeight.w600,
+            color: BridgeDSColors.of(context).textPrimary,),
+        ),
+        const SizedBox(height: 8),
+        // 推薦模型列表（可點選）
+        ...recommendations.asMap().entries.map((entry) {
+          final index = entry.key;
+          final recommendation = entry.value;
+          final isSelected = index == _selectedModelIndex;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedModelIndex = index),
+              child: _buildModelEntry(recommendation, isSelected),
+            ),
+          );
+        }),
+        const SizedBox(height: 8),
+        Text(
+          _modelPlan!.summary,
+          style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted,
+            height: 1.4,),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '沒看到想要的模型？用下方搜尋框搜尋 HuggingFace 上的任何 GGUF 模型，未來新模型（Qwen3.6、Gemma 5 等）也能直接搜尋下載。',
+          style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textTertiary,
+            height: 1.4,),
+        ),
+        const SizedBox(height: BridgeDS.spaceMD),
+        // 動態熱門模型
+        _buildTrendingSection(),
+        const SizedBox(height: BridgeDS.spaceMD),
+        // 搜尋框
+        _buildSearchSection(),
+      ],
+    );
+  }
+
+  Widget _buildModelEntry(LocalModelRecommendation recommendation, bool isSelected) {
+    final borderColor = isSelected
+        ? BridgeDSColors.of(context).accentPurple
+        : BridgeDSColors.of(context).borderDefault;
+    final borderWidth = isSelected ? 2.0 : 1.0;
+    final modelId = recommendation.model.id;
+    final isInstalled = _installedModels.contains(modelId);
+    final isDownloadingThis = _downloadingModelId == modelId;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? BridgeDSColors.of(context).accentPurple.withValues(alpha: 0.08)
+            : BridgeDSColors.of(context).surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor, width: borderWidth),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (isSelected)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Icon(Icons.check_circle,
+                      color: BridgeDSColors.of(context).accentPurple, size: 18),
+                ),
+              Expanded(
+                child: Text(
+                  recommendation.model.name,
+                  style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: BridgeDSColors.of(context).textPrimary,),
+                ),
+              ),
+              _buildFitBadge(recommendation.fit),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${recommendation.model.downloadSize} · ${recommendation.model.quantization} · ${recommendation.model.sourceLabel}',
+            style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted,),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            recommendation.reason,
+            style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textSecondary,
+              height: 1.3,),
+          ),
+          // 每個模型的獨立下載按鈕
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              if (isInstalled) ...[
+                Icon(Icons.check_circle, color: BridgeDSColors.of(context).accentGreen, size: 14),
+                const SizedBox(width: 4),
+                Text('已下載',
+                    style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).accentGreen)),
+                // 顯示實際檔案大小
+                if (_installedModelSizes[modelId] != null) ...[
+                  const SizedBox(width: 4),
+                  Text(_formatFileSize(_installedModelSizes[modelId]!),
+                      style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted)),
+                ],
+                const SizedBox(width: 8),
+                // 測試按鈕 / 測試結果
+                if (_testingModels.contains(modelId)) ...[
+                  const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+                  const SizedBox(width: 4),
+                  Text('測試中', style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted)),
+                ] else if (_modelTestResults[modelId] == true) ...[
+                  // 測試通過
+                  Icon(Icons.verified, color: BridgeDSColors.of(context).accentGreen, size: 14),
+                  const SizedBox(width: 4),
+                  Text('已驗證', style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).accentGreen, fontWeight: FontWeight.w600)),
+                  const SizedBox(width: 6),
+                  // 加入/移除候選列表
+                  GestureDetector(
+                    onTap: _isLoading ? null : () => _toggleCandidate(modelId),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _candidateModels.contains(modelId)
+                            ? BridgeDSColors.of(context).accentGreen.withValues(alpha: 0.15)
+                            : BridgeDSColors.of(context).accentPurple.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(_candidateModels.contains(modelId) ? Icons.check : Icons.add, size: 12,
+                              color: _candidateModels.contains(modelId) ? BridgeDSColors.of(context).accentGreen : BridgeDSColors.of(context).accentPurple),
+                          const SizedBox(width: 3),
+                          Text(_candidateModels.contains(modelId) ? '候選' : '加入列表',
+                              style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: _candidateModels.contains(modelId) ? BridgeDSColors.of(context).accentGreen : BridgeDSColors.of(context).accentPurple,
+                                  fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  // 重新測試
+                  GestureDetector(
+                    onTap: _isLoading ? null : () => _testModel(modelId),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: BridgeDSColors.of(context).surfaceHover,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Icon(Icons.refresh, size: 12, color: BridgeDSColors.of(context).textMuted),
+                    ),
+                  ),
+                ] else if (_modelTestResults[modelId] == false) ...[
+                  // 測試失敗
+                  Icon(Icons.warning, color: BridgeDSColors.of(context).accentRed, size: 14),
+                  const SizedBox(width: 4),
+                  Text('測試失敗', style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).accentRed)),
+                  const SizedBox(width: 6),
+                  // 重新測試
+                  GestureDetector(
+                    onTap: _isLoading ? null : () => _testModel(modelId),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: BridgeDSColors.of(context).accentPurple.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.refresh, size: 12, color: BridgeDSColors.of(context).accentPurple),
+                          const SizedBox(width: 3),
+                          Text('重新測試', style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).accentPurple, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  // 尚未測試
+                  GestureDetector(
+                    onTap: _isLoading ? null : () => _testModel(modelId),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: BridgeDSColors.of(context).accentPurple.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.science, size: 12, color: BridgeDSColors.of(context).accentPurple),
+                          const SizedBox(width: 3),
+                          Text('測試', style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).accentPurple, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(width: 4),
+                // 刪除按鈕
+                GestureDetector(
+                  onTap: _isLoading ? null : () => _deleteModel(modelId),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: BridgeDSColors.of(context).accentRed.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.delete_outline, size: 12, color: BridgeDSColors.of(context).accentRed),
+                        const SizedBox(width: 3),
+                        Text('刪除', style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).accentRed, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                ),
+              ] else if (isDownloadingThis) ...[
+                const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+                const SizedBox(width: 6),
+                Text('下載中...',
+                    style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted)),
+              ] else ...[
+                GestureDetector(
+                  onTap: _isLoading ? null : () => _downloadSpecificModel(recommendation),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: BridgeDSColors.of(context).accentPurple.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: BridgeDSColors.of(context).accentPurple.withValues(alpha: 0.4)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.download, size: 14, color: BridgeDSColors.of(context).accentPurple),
+                        const SizedBox(width: 4),
+                        Text('下載', style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).accentPurple, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              const Spacer(),
+              if (isSelected && !isInstalled && !isDownloadingThis)
+                Text('已選為推薦',
+                    style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrendingSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Divider(color: BridgeDSColors.of(context).borderSubtle),
+        const SizedBox(height: BridgeDS.spaceSM),
+        Row(
+          children: [
+            Icon(Icons.trending_up, color: BridgeDSColors.of(context).textMuted, size: 14),
+            const SizedBox(width: 4),
+            Text(
+              '熱門模型',
+              style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(fontWeight: FontWeight.w600,
+                color: BridgeDSColors.of(context).textPrimary,),
+            ),
+            const Spacer(),
+            if (_isLoadingTrending)
+              const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (_trendingModels.isEmpty && !_isLoadingTrending)
+          Text(
+            '暫無資料',
+            style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted),
+          ),
+        ..._trendingModels.map((r) => _buildTrendingEntry(r)),
+      ],
+    );
+  }
+
+  Widget _buildTrendingEntry(Map<String, dynamic> result) {
+    final modelId = result['id'] as String? ?? '';
+    final downloads = result['downloads'] as int? ?? 0;
+    final likes = result['likes'] as int? ?? 0;
+    final lastModified = result['lastModified'] as String? ?? '';
+    final shortName = modelId.split('/').last;
+    final repoOwner = modelId.split('/').first;
+    String family;
+    if (shortName.toLowerCase().contains('qwen')) {
+      family = 'Qwen';
+    } else if (shortName.toLowerCase().contains('gemma')) {
+      family = 'Gemma';
+    } else if (shortName.toLowerCase().contains('llama')) {
+      family = 'Llama';
+    } else {
+      family = '其他';
+    }
+    final isInstalled = _installedModels.contains(modelId);
+    final isDownloadingThis = _downloadingModelId == modelId;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: BridgeDSColors.of(context).surface,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: BridgeDSColors.of(context).borderSubtle),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: BridgeDSColors.of(context).accentPurple.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(family, style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).accentPurple, fontWeight: FontWeight.w600)),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    shortName,
+                    style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textSecondary, fontWeight: FontWeight.w500),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    [
+                      repoOwner,
+                      if (downloads > 0) '⬇ ${_formatDownloads(downloads)}',
+                      if (likes > 0) '❤ $likes',
+                      if (lastModified.isNotEmpty) _formatDate(lastModified),
+                    ].join(' · '),
+                    style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted),
+                  ),
+                ],
+              ),
+            ),
+            // 下載按鈕 or 狀態
+            if (isInstalled)
+              Icon(Icons.check_circle, color: BridgeDSColors.of(context).accentGreen, size: 16)
+            else if (isDownloadingThis)
+              const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+            else
+              GestureDetector(
+                onTap: _isLoading ? null : () => _downloadTrendingModel(result),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: BridgeDSColors.of(context).accentPurple.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Icon(Icons.download, size: 14, color: BridgeDSColors.of(context).accentPurple),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(String isoDate) {
+    try {
+      final dt = DateTime.parse(isoDate);
+      final now = DateTime.now();
+      final diff = now.difference(dt);
+      if (diff.inDays > 30) return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+      if (diff.inDays > 0) return '${diff.inDays}天前';
+      if (diff.inHours > 0) return '${diff.inHours}小時前';
+      return '剛更新';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  Widget _buildSearchSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Divider(color: BridgeDSColors.of(context).borderSubtle),
+        const SizedBox(height: BridgeDS.spaceSM),
+        Text(
+          '搜尋更多模型',
+          style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(fontWeight: FontWeight.w600,
+            color: BridgeDSColors.of(context).textPrimary,),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textPrimary,),
+          decoration: InputDecoration(
+            hintText: '輸入模型名稱，例如 Phi-4, SmolLM3...',
+            hintStyle: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted,),
+            prefixIcon: Icon(Icons.search, color: BridgeDSColors.of(context).textMuted, size: 18),
+            filled: true,
+            fillColor: BridgeDSColors.of(context).surface,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: BridgeDSColors.of(context).borderDefault),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: BridgeDSColors.of(context).borderDefault),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: BridgeDSColors.of(context).accentPurple),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            isDense: true,
+          ),
+          onSubmitted: (query) => _performSearch(query),
+        ),
+        if (_isSearching)
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: SizedBox(
+              width: 16, height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        if (_searchResults.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          ..._searchResults.map((r) => _buildSearchResultEntry(r)),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSearchResultEntry(Map<String, dynamic> result) {
+    final modelId = result['id'] as String? ?? '';
+    final downloads = result['downloads'] as int? ?? 0;
+    final pipelineTag = result['pipeline_tag'] as String? ?? '';
+    final shortName = modelId.split('/').last;
+    final isInstalled = _installedModels.contains(modelId);
+    final isDownloadingThis = _downloadingModelId == modelId;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: BridgeDSColors.of(context).surface,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: BridgeDSColors.of(context).borderSubtle),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.cloud_download, color: BridgeDSColors.of(context).textMuted, size: 14),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    shortName,
+                    style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textSecondary),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (downloads > 0 || pipelineTag.isNotEmpty)
+                    Text(
+                      [
+                        if (downloads > 0) '⬇ ${_formatDownloads(downloads)}',
+                        if (pipelineTag.isNotEmpty) pipelineTag,
+                      ].join(' · '),
+                      style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted),
+                    ),
+                ],
+              ),
+            ),
+            if (isInstalled)
+              Icon(Icons.check_circle, color: BridgeDSColors.of(context).accentGreen, size: 16)
+            else if (isDownloadingThis)
+              const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+            else
+              GestureDetector(
+                onTap: _isLoading ? null : () => _downloadTrendingModel(result),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: BridgeDSColors.of(context).accentPurple.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Icon(Icons.download, size: 14, color: BridgeDSColors.of(context).accentPurple),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDownloads(int n) {
+    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(0)}K';
+    return n.toString();
+  }
+
+  /// [教練 Agent 2026-07-20] 下載熱門/搜尋模型（從 HuggingFace API 結果構建 recommendation）
+  Future<void> _downloadTrendingModel(Map<String, dynamic> result) async {
+    final modelId = result['id'] as String? ?? '';
+    final shortName = modelId.split('/').last;
+
+    // 構建一個臨時的 LocalModelCatalogEntry
+    final entry = LocalModelCatalogEntry(
+      id: modelId,
+      name: shortName,
+      sizeClass: '?',
+      quantization: 'GGUF',
+      minRamGb: 4,
+      recommendedRamGb: 8,
+      recommendedVramGb: null,
+      downloadSize: '未知大小',
+      runtime: 'llama.cpp',
+      sourceLabel: modelId.split('/').first,
+      licenseLabel: '',
+      manifestUrl: 'https://huggingface.co/$modelId',
+      checksumSha256: '',
+      fileName: '',
+      repoId: modelId,
+      downloadUrl: '',
+      bestFor: const [],
+    );
+    final recommendation = LocalModelRecommendation(
+      model: entry,
+      fit: LocalModelFit.good,
+      reason: '來自 HuggingFace 社群',
+    );
+
+    setState(() {
+      _downloadingModelId = modelId;
+      _isLoading = true;
+    });
+
+    try {
+      final newState = await _runtimeService.downloadModel(recommendation);
+      if (mounted) {
+        setState(() {
+          _runtimeState = newState;
+          _isLoading = false;
+          if (newState.phase != BridgeLocalRuntimePhase.downloading) {
+            _installedModels.add(modelId);
+            _downloadingModelId = null;
+          }
+        });
+        if (newState.phase == BridgeLocalRuntimePhase.downloading) {
+          _startPolling();
+        }
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _downloadingModelId = null;
+        });
+      }
+    }
+  }
+
+  /// [教練 Agent 2026-07-20] 透過 Swift 原生層掃描硬碟上的已下載模型
+  /// 包含測試結果和候選列表狀態
+  Future<void> _scanInstalledModels() async {
+    try {
+      // 方法 1: 透過 listInstalledModels API
+      var models = await _runtimeService.listInstalledModels();
+      debugPrint('[LocalLlm] listInstalledModels API returned: ${models.length} items');
+
+      // 方法 2: 如果 API 回空，從 runtimeState 的 modelId 推導
+      if (models.isEmpty && _runtimeState != null && _runtimeState!.modelId != null) {
+        debugPrint('[LocalLlm] Falling back to runtimeState.modelId: ${_runtimeState!.modelId}');
+        models.add({
+          'modelId': _runtimeState!.modelId,
+        });
+      }
+
+      for (final item in models) {
+        debugPrint('[LocalLlm]   modelId=${item['modelId']}, fileSize=${item['fileSize']}');
+      }
+
+      final installed = <String>{};
+      final sizes = <String, int>{};
+      final testResults = <String, bool>{};
+      final testResponses = <String, String>{};
+
+      for (final item in models) {
+        final modelId = item['modelId'] as String? ?? '';
+        final fileSize = item['fileSize'] as int? ?? 0;
+        if (modelId.isNotEmpty && fileSize > 1024 * 1024) {
+          installed.add(modelId);
+          sizes[modelId] = fileSize;
+          if (item['testPassed'] != null) {
+            testResults[modelId] = item['testPassed'] as bool;
+          }
+          if (item['testResponse'] != null) {
+            testResponses[modelId] = item['testResponse'] as String;
+          }
+        } else if (modelId.isNotEmpty) {
+          // 沒有 fileSize 但有 modelId（從 runtimeState fallback 來的）
+          installed.add(modelId);
+        }
+      }
+
+      debugPrint('[LocalLlm] 掃描完成: ${installed.length} 個已安裝模型 = $installed');
+
+      if (mounted) {
+        setState(() {
+          _installedModels = installed;
+          _installedModelSizes = sizes;
+          _modelTestResults = testResults;
+          _modelTestResponses = testResponses;
+          // [教練 Agent 2026-07-25] 測試通過的模型自動加入候選列表
+          for (final entry in testResults.entries) {
+            if (entry.value) {
+              _candidateModels.add(entry.key);
+            }
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('[LocalLlm] 掃描已安裝模型失敗: $e');
+    }
+  }
+
+  /// [教練 Agent 2026-07-20] 測試模型
+  Future<void> _testModel(String modelId) async {
+    setState(() {
+      _testingModels.add(modelId);
+      _isLoading = true;
+    });
+    try {
+      // 發送測試命令（背景執行，立即回傳）
+      await _runtimeService.testModel(modelId);
+
+      // 輪詢等待測試結果（最多 30 秒）
+      for (int i = 0; i < 15; i++) {
+        await Future.delayed(const Duration(seconds: 2));
+        await _scanInstalledModels();
+        // 檢查是否有測試結果了
+        if (_modelTestResults.containsKey(modelId)) {
+          break;
+        }
+      }
+
+      // [教練 Agent 2026-07-25] 測試通過自動加入候選列表
+      if (mounted) {
+        setState(() {
+          _testingModels.remove(modelId);
+          _isLoading = false;
+          if (_modelTestResults[modelId] == true) {
+            _candidateModels.add(modelId);
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _testingModels.remove(modelId);
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  /// [教練 Agent 2026-07-20] 加入/移除候選列表
+  void _toggleCandidate(String modelId) {
+    setState(() {
+      if (_candidateModels.contains(modelId)) {
+        _candidateModels.remove(modelId);
+      } else {
+        _candidateModels.add(modelId);
+      }
+    });
+  }
+
+  /// [教練 Agent 2026-07-20] 格式化檔案大小
+  String _formatFileSize(int bytes) {
+    if (bytes >= 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
+    } else if (bytes >= 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(0)} MB';
+    }
+    return '${(bytes / 1024).toStringAsFixed(0)} KB';
+  }
+
+  /// [教練 Agent 2026-07-20] 多模型並行運算開關
+  /// 依硬體 RAM 判斷：< 20GB 禁止，≥ 20GB 雙模型，≥ 30GB 三模型
+  Widget _buildParallelModeSwitch() {
+    final ramGb = _hardwareProfile?.ramGb ?? 0;
+    final candidateCount = _candidateModels.length;
+
+    // 計算硬體允許的並行數
+    int maxParallel;
+    String hwAdvice;
+    if (ramGb < 20) {
+      maxParallel = 1;
+      hwAdvice = '目前是 Agent 自動切換模式，一次呼叫一個模型運算，等硬體升級後再開啟並行運算';
+    } else if (ramGb < 30) {
+      maxParallel = 2;
+      hwAdvice = '本機 ${ramGb}GB RAM 可並行 2 個模型';
+    } else {
+      maxParallel = 3;
+      hwAdvice = '本機 ${ramGb}GB RAM 可並行最多 3 個模型';
+    }
+
+    final canEnable = maxParallel >= 2 && candidateCount >= 2;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: BridgeDSColors.of(context).surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: _parallelModeEnabled
+              ? BridgeDSColors.of(context).accentPurple.withValues(alpha: 0.4)
+              : BridgeDSColors.of(context).borderSubtle,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.dynamic_feed,
+                  size: 16,
+                  color: canEnable ? BridgeDSColors.of(context).accentPurple : BridgeDSColors.of(context).textMuted),
+              const SizedBox(width: 8),
+              Text('多模型並行運算',
+                  style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(fontWeight: FontWeight.w600,
+                      color: BridgeDSColors.of(context).textPrimary)),
+              const Spacer(),
+              // 開關
+              GestureDetector(
+                onTap: canEnable
+                    ? () {
+                        setState(() {
+                          _parallelModeEnabled = !_parallelModeEnabled;
+                        });
+                      }
+                    : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 40,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: _parallelModeEnabled
+                        ? BridgeDSColors.of(context).accentPurple
+                        : BridgeDSColors.of(context).surfaceHover,
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: AnimatedAlign(
+                    duration: const Duration(milliseconds: 200),
+                    alignment: _parallelModeEnabled ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      decoration: BoxDecoration(
+                        color: BridgeDSColors.of(context).textPrimary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          // 硬體建議
+          Row(
+            children: [
+              Icon(Icons.memory, size: 12, color: BridgeDSColors.of(context).textMuted),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  canEnable
+                      ? '$hwAdvice（候選 $candidateCount 個模型）'
+                      : '$hwAdvice（需 ≥20GB RAM 和 ≥2 個候選模型）',
+                  style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: canEnable ? BridgeDSColors.of(context).textSecondary : BridgeDSColors.of(context).textMuted,),
+                ),
+              ),
+            ],
+          ),
+          if (_parallelModeEnabled && canEnable) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: BridgeDSColors.of(context).accentPurple.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 12, color: BridgeDSColors.of(context).accentPurple),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Agent 將可同時使用最多 ${maxParallel.clamp(0, candidateCount)} 個模型並行處理任務',
+                      style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).accentPurple),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// [教練 Agent 2026-07-20] 啟動指定模型（切換模型）
+  Future<void> _switchToModel(String modelId) async {
+    setState(() => _isLoading = true);
+    try {
+      final newState = await _runtimeService.startServer(modelId: modelId);
+      if (mounted) {
+        setState(() {
+          _runtimeState = newState;
+          _isLoading = false;
+        });
+        if (newState.phase == BridgeLocalRuntimePhase.starting ||
+            newState.phase == BridgeLocalRuntimePhase.running) {
+          _startPolling();
+        }
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  /// [教練 Agent 2026-07-20] 刪除已下載的模型
+  Future<void> _deleteModel(String modelId) async {
+    setState(() => _isLoading = true);
+    try {
+      final newState = await _runtimeService.deleteModel(modelId);
+      if (mounted) {
+        setState(() {
+          _runtimeState = newState;
+          _isLoading = false;
+          _installedModels.remove(modelId);
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  /// [教練 Agent 2026-07-20] 從 HuggingFace API 拉取熱門 GGUF 模型
+  /// 搜尋 Qwen / Gemma / Llama 三大系列的輕量化 GGUF，按下載量排序
+  /// [教練 Agent 2026-07-27] 按硬體 RAM 過濾 — 16GB 機器不顯示 27B+ 大模型
+  Future<void> _fetchTrendingModels() async {
+    if (_isLoadingTrending) return;
+    setState(() => _isLoadingTrending = true);
+
+    try {
+      // 根據 RAM 計算可安裝的最大模型大小（bytes）
+      // 經驗值：模型檔案大小 ≤ RAM × 0.6（留空間給 KV cache + 系統）
+      final ramGb = _hardwareProfile?.ramGb ?? 16;
+      final maxModelSizeBytes = (ramGb * 0.6 * 1024 * 1024 * 1024).round();
+      // 限制最大參數量：16GB → 8B, 32GB → 14B, 64GB → 30B
+      final maxParamB = (ramGb / 2).round().clamp(4, 30);
+
+      final results = <Map<String, dynamic>>[];
+      // 三大系列各拉 5 個熱門 GGUF（多拉一些再過濾）
+      for (final query in ['Qwen', 'Gemma', 'Llama']) {
+        final response = await _dio.get(
+          'https://huggingface.co/api/models',
+          queryParameters: {
+            'search': query,
+            'filter': 'gguf',
+            'sort': 'downloads',
+            'direction': '-1',
+            'limit': 5,
+          },
+        );
+        final items = (response.data as List).cast<Map<String, dynamic>>();
+        for (final item in items) {
+          // 去重：如果已在推薦列表中則跳過
+          final modelId = item['id'] as String? ?? '';
+          final isAlreadyRecommended = _modelPlan?.recommendations.any((r) =>
+              r.model.repoId == modelId) ?? false;
+          if (!isAlreadyRecommended) {
+            // [教練 Agent 2026-07-27] 過濾掉參數量太大的模型
+            final shortName = modelId.split('/').last.toLowerCase();
+            // 從名稱偵測參數量（如 27b, 30b, 70b 等）
+            final paramMatch = RegExp(r'(\d+(?:\.\d+)?)\s*b').firstMatch(shortName);
+            if (paramMatch != null) {
+              final paramB = double.tryParse(paramMatch.group(1)!) ?? 0;
+              if (paramB > maxParamB) continue; // 跳過太大的模型
+            }
+            results.add(item);
+          }
+        }
+      }
+      // 只取前 9 個（三大系列各 3 個）
+      final filtered = results.take(9).toList();
+      if (mounted) {
+        setState(() {
+          _trendingModels = filtered;
+          _isLoadingTrending = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoadingTrending = false);
+      }
+    }
+  }
+
+  Future<void> _performSearch(String query) async {
+    if (query.trim().isEmpty) return;
+    setState(() {
+      _isSearching = true;
+      _searchQuery = query.trim();
+    });
+
+    try {
+      final response = await _dio.get(
+        'https://huggingface.co/api/models',
+        queryParameters: {
+          'search': query.trim(),
+          'filter': 'gguf',
+          'sort': 'downloads',
+          'direction': '-1',
+          'limit': 5,
+        },
+      );
+      final items = (response.data as List).cast<Map<String, dynamic>>();
+      if (mounted) {
+        setState(() {
+          _searchResults = items;
+          _isSearching = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isSearching = false);
+      }
+    }
+  }
+
+  Widget _buildFitBadge(LocalModelFit fit) {
+    Color color;
+    switch (fit) {
+      case LocalModelFit.excellent:
+        color = BridgeDSColors.of(context).accentGreen;
+        break;
+      case LocalModelFit.good:
+        color = BridgeDSColors.of(context).accentBlue;
+        break;
+      case LocalModelFit.limited:
+        color = BridgeDSColors.of(context).accentYellow;
+        break;
+      case LocalModelFit.unsupported:
+        color = BridgeDSColors.of(context).accentRed;
+        break;
+      case LocalModelFit.unknown:
+        color = BridgeDSColors.of(context).textMuted;
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        fit.label,
+        style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: color,
+          fontWeight: FontWeight.w600,),
+      ),
+    );
+  }
+
+  Widget _buildRunningInfo() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: BridgeDSColors.of(context).accentGreen.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: BridgeDSColors.of(context).accentGreen.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.check_circle,
+                color: BridgeDSColors.of(context).accentGreen,
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '本地 server 運行中',
+                style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(fontWeight: FontWeight.w600,
+                  color: BridgeDSColors.of(context).accentGreen,),
+              ),
+            ],
+          ),
+          if (_runtimeState!.serverUrl != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Server URL: ${_runtimeState!.serverUrl}',
+              style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textSecondary,),
+            ),
+          ],
+          if (_runtimeState!.activeModelName != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              '模型: ${_runtimeState!.activeModelName}',
+              style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textSecondary,),
+            ),
+          ],
+          if (_runtimeState!.healthDetail != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              _runtimeState!.healthDetail!,
+              style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).textMuted,),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorInfo() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: BridgeDSColors.of(context).accentRed.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: BridgeDSColors.of(context).accentRed.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: BridgeDSColors.of(context).accentRed,
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _runtimeState!.healthDetail ?? '運行失敗，請檢查詳情',
+              style: TierStyle.of(context, Tier.cardBody).toTextStyle().copyWith(color: BridgeDSColors.of(context).accentRed,),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

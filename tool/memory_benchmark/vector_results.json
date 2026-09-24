@@ -1,0 +1,10 @@
+{
+ "run_at": "2026-09-23T04:39:20.455918",
+ "path": "pipeline_vector",
+ "model": "gemma-300m-v1 (real LiteRT, flutter test env)",
+ "recall@1": 0.96,
+ "recall@5": 1.0,
+ "recall@10": 1.0,
+ "mrr": 0.98,
+ "misses": []
+}

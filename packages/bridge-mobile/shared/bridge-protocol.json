@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bridge Mobile Protocol v1.0",
+  "description": "WebSocket 通訊協議 — 手機 ↔ 桌面 Bridge App Gateway (port 9123)",
+  "version": "1.0.0",
+  "generatedAt": "2026-08-06",
+  "source": "lib/services/desktop_bridge_gateway_protocol.dart",
+
+  "connection": {
+    "scheme": "ws://",
+    "host": "192.168.x.x",
+    "port": 9123,
+    "encoding": "JSON",
+    "autoReconnect": true,
+    "reconnectIntervalMs": 3000,
+    "heartbeatIntervalMs": 30000
+  },
+
+  "messageTypes": {
+    "hello": {
+      "direction": "mobile → desktop",
+      "description": "握手請求，建立連線",
+      "schema": {
+        "type": "object",
+        "required": ["type", "deviceId", "platform", "appVersion"],
+        "properties": {
+          "type": { "const": "hello" },
+          "deviceId": { "type": "string", "description": "手機唯一 ID" },
+          "platform": { "enum": ["ios", "android"] },
+          "appVersion": { "type": "string", "example": "1.0.0" }
+        }
+      }
+    },
+
+    "hello_ack": {
+      "direction": "desktop → mobile",
+      "description": "握手回應，desktop 接受/拒絕",
+      "schema": {
+        "type": "object",
+        "required": ["type", "paired", "deviceName"],
+        "properties": {
+          "type": { "const": "hello_ack" },
+          "paired": { "type": "boolean" },
+          "deviceName": { "type": "string", "example": "Blue's MacBook" },
+          "serverVersion": { "type": "string" }
+        }
+      }
+    },
+
+    "runtimeSnapshot": {
+      "direction": "desktop → mobile (request-response)",
+      "description": "桌面 runtime 狀態快照"
+    },
+
+    "capabilityList": {
+      "direction": "desktop → mobile",
+      "description": "桌面支援的能力清單"
+    },
+
+    "error": {
+      "direction": "desktop → mobile",
+      "description": "錯誤訊息",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "example": "INTERNAL_ERROR" },
+          "message": { "type": "string" }
+        }
+      }
+    },
+
+    "taskRun": {
+      "direction": "mobile → desktop",
+      "description": "啟動長任務",
+      "schema": {
+        "type": "object",
+        "required": ["type", "taskId", "taskType", "payload"],
+        "properties": {
+          "type": { "const": "task.run" },
+          "taskId": { "type": "string", "description": "UUID" },
+          "taskType": { "type": "string", "example": "browser.navigate" },
+          "payload": { "type": "object" }
+        }
+      }
+    },
+
+    "taskCancel": {
+      "direction": "mobile → desktop",
+      "description": "取消進行中的任務",
+      "schema": {
+        "type": "object",
+        "required": ["type", "taskId"],
+        "properties": {
+          "type": { "const": "task.cancel" },
+          "taskId": { "type": "string" }
+        }
+      }
+    },
+
+    "taskProgress": {
+      "direction": "desktop → mobile (push)",
+      "description": "任務進度更新",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "task.progress" },
+          "taskId": { "type": "string" },
+          "progress": { "type": "number", "minimum": 0, "maximum": 1 },
+          "message": { "type": "string" }
+        }
+      }
+    },
+
+    "taskComplete": {
+      "direction": "desktop → mobile (push)",
+      "description": "任務完成 (成功或失敗)",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "task.complete" },
+          "taskId": { "type": "string" },
+          "success": { "type": "boolean" },
+          "result": { "type": "object" },
+          "error": { "type": "string", "nullable": true }
+        }
+      }
+    },
+
+    "taskAwaitingConfirmation": {
+      "direction": "desktop → mobile (push)",
+      "description": "任務暫停等待使用者確認",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "task.awaitingConfirmation" },
+          "taskId": { "type": "string" },
+          "reason": { "type": "string", "example": "登入頁偵測" },
+          "context": { "type": "object" }
+        }
+      }
+    }
+  },
+
+  "examples": [
+    {
+      "name": "完整連線 + 跑任務流程",
+      "steps": [
+        { "step": 1, "direction": "M→D", "message": { "type": "hello", "deviceId": "iphone-blue", "platform": "ios", "appVersion": "1.0.0" } },
+        { "step": 2, "direction": "D→M", "message": { "type": "hello_ack", "paired": true, "deviceName": "Blue's MacBook", "serverVersion": "0.6.2" } },
+        { "step": 3, "direction": "M→D", "message": { "type": "task.run", "taskId": "abc-123", "taskType": "browser.navigate", "payload": { "url": "https://example.com" } } },
+        { "step": 4, "direction": "D→M", "message": { "type": "task.progress", "taskId": "abc-123", "progress": 0.5, "message": "Navigating..." } },
+        { "step": 5, "direction": "D→M", "message": { "type": "task.complete", "taskId": "abc-123", "success": true, "result": { "screenshot": "base64..." } } }
+      ]
+    }
+  ]
+}

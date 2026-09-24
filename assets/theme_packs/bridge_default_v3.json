@@ -1,0 +1,392 @@
+{
+  "id": "bridge_default_v3",
+  "name": "Bridge Default v3",
+  "author": "Bridge Design System",
+  "license": "MIT",
+  "version": "1.0.0",
+  "generatedAt": "2026-08-06T01:23:40.633954",
+  "tokens": {
+    "canvas": {
+      "value": "0xFF07080A",
+      "category": "Surface"
+    },
+    "surface": {
+      "value": "0xFF101111",
+      "category": "Surface"
+    },
+    "surfaceElevated": {
+      "value": "0xFF1B1C1E",
+      "category": "Surface"
+    },
+    "surfaceHover": {
+      "value": "0xFF252829",
+      "category": "Surface"
+    },
+    "textPrimary": {
+      "value": "0xFFF9F9F9",
+      "category": "Text"
+    },
+    "textSecondary": {
+      "value": "0xFFCECECE",
+      "category": "Text"
+    },
+    "textTertiary": {
+      "value": "0xFF9C9C9D",
+      "category": "Text"
+    },
+    "textMuted": {
+      "value": "0xFF6A6B6C",
+      "category": "Text"
+    },
+    "textQuaternary": {
+      "value": "0xFF434345",
+      "category": "Text"
+    },
+    "accentRed": {
+      "value": "0xFFFF6363",
+      "category": "Accent"
+    },
+    "accentBlue": {
+      "value": "0xFF55B3FF",
+      "category": "Accent"
+    },
+    "accentGreen": {
+      "value": "0xFF5FC992",
+      "category": "Accent"
+    },
+    "accentYellow": {
+      "value": "0xFFFFBC33",
+      "category": "Accent"
+    },
+    "accentPurple": {
+      "value": "0xFF533AFD",
+      "category": "Accent"
+    },
+    "accentNavy": {
+      "value": "0xFF061B31",
+      "category": "Accent"
+    },
+    "accentMagenta": {
+      "value": "0xFFF96BEE",
+      "category": "Accent"
+    },
+    "accentRuby": {
+      "value": "0xFFEA2261",
+      "category": "Accent"
+    },
+    "accentMiro": {
+      "value": "0xFF5B76FE",
+      "category": "Accent"
+    },
+    "borderSubtle": {
+      "value": "0x0FFFFFFF",
+      "category": "Border"
+    },
+    "borderDefault": {
+      "value": "0x1AFFFFFF",
+      "category": "Border"
+    },
+    "borderStrong": {
+      "value": "0x33FFFFFF",
+      "category": "Border"
+    },
+    "surfaceGlass": {
+      "value": "0x0DFFFFFF",
+      "category": "Surface"
+    },
+    "surfaceGlassHover": {
+      "value": "0x14FFFFFF",
+      "category": "Surface"
+    },
+    "particle1": {
+      "value": "0xFF533AFD",
+      "category": "Particle"
+    },
+    "particle2": {
+      "value": "0xFFF96BEE",
+      "category": "Particle"
+    },
+    "particle3": {
+      "value": "0xFF55B3FF",
+      "category": "Particle"
+    },
+    "particle4": {
+      "value": "0xFF5FC992",
+      "category": "Particle"
+    },
+    "particleGlow": {
+      "value": "0x40533AFD",
+      "category": "Particle"
+    },
+    "tagSuccessBg": {
+      "value": "0xFF0E1B12",
+      "category": "Status"
+    },
+    "tagSuccessFg": {
+      "value": "0xFFB8E8CC",
+      "category": "Status"
+    },
+    "tagErrorBg": {
+      "value": "0xFF1B0E0E",
+      "category": "Status"
+    },
+    "tagErrorFg": {
+      "value": "0xFFFFADAD",
+      "category": "Status"
+    },
+    "tagInfoBg": {
+      "value": "0xFF0E151B",
+      "category": "Status"
+    },
+    "tagInfoFg": {
+      "value": "0xFFB3DCFF",
+      "category": "Status"
+    },
+    "tagBrainBg": {
+      "value": "0xFF0E0A1B",
+      "category": "Status"
+    },
+    "tagBrainFg": {
+      "value": "0xFFB9B9F9",
+      "category": "Status"
+    },
+    "tagWarnBg": {
+      "value": "0xFF1B160E",
+      "category": "Status"
+    },
+    "tagWarnFg": {
+      "value": "0xFFFFD580",
+      "category": "Status"
+    },
+    "softGreen": {
+      "value": "0xFF81C784",
+      "category": "Status"
+    },
+    "toolPurple": {
+      "value": "0xFF7C4DFF",
+      "category": "Other"
+    },
+    "toolPurpleLight": {
+      "value": "0xFFB388FF",
+      "category": "Other"
+    },
+    "errorRed": {
+      "value": "0xFFEF5350",
+      "category": "Status"
+    },
+    "lightBlue": {
+      "value": "0xFF42A5F5",
+      "category": "Other"
+    },
+    "teal": {
+      "value": "0xFF4ECDC4",
+      "category": "Node"
+    },
+    "slate": {
+      "value": "0xFF8E9AAF",
+      "category": "Node"
+    },
+    "deepPurple": {
+      "value": "0xFF7C89FF",
+      "category": "Node"
+    },
+    "fileBlue": {
+      "value": "0xFF4A9EFF",
+      "category": "Node"
+    },
+    "sopOrange": {
+      "value": "0xFFFFB454",
+      "category": "Node"
+    },
+    "pinkAccent": {
+      "value": "0xFFFF6B9D",
+      "category": "Node"
+    },
+    "darkPanel": {
+      "value": "0xFF1E1E2E",
+      "category": "Surface"
+    },
+    "darkCanvas": {
+      "value": "0xFF0D0D1A",
+      "category": "Surface"
+    },
+    "successGreen": {
+      "value": "0xFF6B8E6B",
+      "category": "Status"
+    },
+    "hintPurple": {
+      "value": "0xFF8888AA",
+      "category": "Hint"
+    },
+    "hintPink": {
+      "value": "0xFFCE93D8",
+      "category": "Hint"
+    },
+    "successDark": {
+      "value": "0xFF2E7D32",
+      "category": "Status"
+    },
+    "brightCyan": {
+      "value": "0xFF00D4FF",
+      "category": "Other"
+    },
+    "googleBlue": {
+      "value": "0xFF1A73E8",
+      "category": "Hint"
+    },
+    "goldAccent": {
+      "value": "0xFFFFD700",
+      "category": "Other"
+    },
+    "alertRed": {
+      "value": "0xFFFF1744",
+      "category": "Other"
+    },
+    "infoBlue": {
+      "value": "0xFF4A90D9",
+      "category": "Hint"
+    },
+    "red700": {
+      "value": "0xFFD32F2F",
+      "category": "MaterialStandard"
+    },
+    "berlinRed": {
+      "value": "0xFFC8102E",
+      "category": "Other"
+    },
+    "bgLightRed": {
+      "value": "0xFFFFF3F2",
+      "category": "Other"
+    },
+    "bgLightGreen": {
+      "value": "0xFFF1F8E9",
+      "category": "Other"
+    },
+    "bgVeryLightRed": {
+      "value": "0xFFFFF8F7",
+      "category": "Other"
+    },
+    "lightGray": {
+      "value": "0xFFE0E0E0",
+      "category": "Grey"
+    },
+    "orange500": {
+      "value": "0xFFFF9800",
+      "category": "MaterialStandard"
+    },
+    "orange300": {
+      "value": "0xFFFFB74D",
+      "category": "MaterialStandard"
+    },
+    "dividerIndigo": {
+      "value": "0xFF2A2A4A",
+      "category": "Other"
+    },
+    "textOnAccent": {
+      "value": "0xFFFFFFFF",
+      "category": "Text"
+    },
+    "grey600": {
+      "value": "0xFF757575",
+      "category": "Grey"
+    },
+    "grey700": {
+      "value": "0xFF616161",
+      "category": "Grey"
+    },
+    "grey800": {
+      "value": "0xFF424242",
+      "category": "Grey"
+    },
+    "grey400": {
+      "value": "0xFFBDBDBD",
+      "category": "Grey"
+    },
+    "grey300": {
+      "value": "0xFFE0E0E0",
+      "category": "Grey"
+    },
+    "red500": {
+      "value": "0xFFF44336",
+      "category": "MaterialStandard"
+    },
+    "red400": {
+      "value": "0xFFEF5350",
+      "category": "MaterialStandard"
+    },
+    "red700mat": {
+      "value": "0xFFD32F2F",
+      "category": "MaterialStandard"
+    },
+    "green500": {
+      "value": "0xFF4CAF50",
+      "category": "MaterialStandard"
+    },
+    "green700": {
+      "value": "0xFF388E3C",
+      "category": "MaterialStandard"
+    },
+    "green400": {
+      "value": "0xFF66BB6A",
+      "category": "MaterialStandard"
+    },
+    "blue500": {
+      "value": "0xFF2196F3",
+      "category": "MaterialStandard"
+    },
+    "blue700": {
+      "value": "0xFF1976D2",
+      "category": "MaterialStandard"
+    },
+    "orangeStd": {
+      "value": "0xFFFF9800",
+      "category": "MaterialStandard"
+    },
+    "orange700": {
+      "value": "0xFFF57C00",
+      "category": "MaterialStandard"
+    }
+  },
+  "tiers": [
+    {
+      "key": "cardBody",
+      "name": "Card Body",
+      "fontSize": 14,
+      "fontWeight": "w400",
+      "letterSpacing": 0.2
+    },
+    {
+      "key": "cardTitle",
+      "name": "Card Title",
+      "fontSize": 16,
+      "fontWeight": "w600",
+      "letterSpacing": 0.3
+    },
+    {
+      "key": "cardHeroTitle",
+      "name": "Card Hero Title",
+      "fontSize": 20,
+      "fontWeight": "bold",
+      "letterSpacing": 0.4
+    },
+    {
+      "key": "cardCaption",
+      "name": "Card Caption",
+      "fontSize": 12,
+      "fontWeight": "w400",
+      "letterSpacing": 0.1
+    },
+    {
+      "key": "appDisplayLarge",
+      "name": "App Display Large",
+      "fontSize": 32,
+      "fontWeight": "bold",
+      "letterSpacing": 0.5
+    }
+  ],
+  "fonts": {
+    "fontDisplay": "Geist Mono",
+    "fontBody": "Inter",
+    "fontCJK": "PingFang TC"
+  }
+}

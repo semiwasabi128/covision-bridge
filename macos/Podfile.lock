@@ -1,0 +1,181 @@
+PODS:
+  - connectivity_plus (0.0.1):
+    - FlutterMacOS
+  - CwlCatchException (2.2.1):
+    - CwlCatchExceptionSupport (~> 2.2.1)
+  - CwlCatchExceptionSupport (2.2.1)
+  - desktop_drop (0.0.1):
+    - FlutterMacOS
+  - file_picker (0.0.1):
+    - FlutterMacOS
+  - flutter_gemma (1.1.2):
+    - FlutterMacOS
+  - flutter_inappwebview_macos (0.0.1):
+    - FlutterMacOS
+    - OrderedSet (~> 6.0.3)
+  - flutter_secure_storage_macos (6.1.3):
+    - FlutterMacOS
+  - flutter_tts (0.0.1):
+    - FlutterMacOS
+  - FlutterMacOS (1.0.0)
+  - large_file_handler (0.5.0):
+    - FlutterMacOS
+  - local_auth_darwin (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - media_kit_libs_macos_video (1.0.4):
+    - FlutterMacOS
+  - media_kit_video (0.0.1):
+    - FlutterMacOS
+  - mobile_scanner (7.0.0):
+    - Flutter
+    - FlutterMacOS
+  - OrderedSet (6.0.3)
+  - package_info_plus (0.0.1):
+    - FlutterMacOS
+  - screen_retriever_macos (0.0.1):
+    - FlutterMacOS
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - speech_to_text (7.2.0):
+    - CwlCatchException
+    - Flutter
+    - FlutterMacOS
+  - sqflite_darwin (0.0.4):
+    - Flutter
+    - FlutterMacOS
+  - tray_manager (0.0.1):
+    - FlutterMacOS
+  - url_launcher_macos (0.0.1):
+    - FlutterMacOS
+  - video_player_macos (0.0.1):
+    - FlutterMacOS
+  - volume_controller (0.0.1):
+    - FlutterMacOS
+  - wakelock_plus (0.0.1):
+    - FlutterMacOS
+  - webview_flutter_wkwebview (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - window_manager (0.2.0):
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - connectivity_plus (from `Flutter/ephemeral/.symlinks/plugins/connectivity_plus/macos`)
+  - desktop_drop (from `Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos`)
+  - file_picker (from `Flutter/ephemeral/.symlinks/plugins/file_picker/macos`)
+  - flutter_gemma (from `Flutter/ephemeral/.symlinks/plugins/flutter_gemma/macos`)
+  - flutter_inappwebview_macos (from `Flutter/ephemeral/.symlinks/plugins/flutter_inappwebview_macos/macos`)
+  - flutter_secure_storage_macos (from `Flutter/ephemeral/.symlinks/plugins/flutter_secure_storage_macos/macos`)
+  - flutter_tts (from `Flutter/ephemeral/.symlinks/plugins/flutter_tts/macos`)
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - large_file_handler (from `Flutter/ephemeral/.symlinks/plugins/large_file_handler/macos`)
+  - local_auth_darwin (from `Flutter/ephemeral/.symlinks/plugins/local_auth_darwin/darwin`)
+  - media_kit_libs_macos_video (from `Flutter/ephemeral/.symlinks/plugins/media_kit_libs_macos_video/macos`)
+  - media_kit_video (from `Flutter/ephemeral/.symlinks/plugins/media_kit_video/macos`)
+  - mobile_scanner (from `Flutter/ephemeral/.symlinks/plugins/mobile_scanner/darwin`)
+  - package_info_plus (from `Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos`)
+  - screen_retriever_macos (from `Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos`)
+  - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - speech_to_text (from `Flutter/ephemeral/.symlinks/plugins/speech_to_text/darwin`)
+  - sqflite_darwin (from `Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin`)
+  - tray_manager (from `Flutter/ephemeral/.symlinks/plugins/tray_manager/macos`)
+  - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
+  - video_player_macos (from `Flutter/ephemeral/.symlinks/plugins/video_player_macos/macos`)
+  - volume_controller (from `Flutter/ephemeral/.symlinks/plugins/volume_controller/macos`)
+  - wakelock_plus (from `Flutter/ephemeral/.symlinks/plugins/wakelock_plus/macos`)
+  - webview_flutter_wkwebview (from `Flutter/ephemeral/.symlinks/plugins/webview_flutter_wkwebview/darwin`)
+  - window_manager (from `Flutter/ephemeral/.symlinks/plugins/window_manager/macos`)
+
+SPEC REPOS:
+  trunk:
+    - CwlCatchException
+    - CwlCatchExceptionSupport
+    - OrderedSet
+
+EXTERNAL SOURCES:
+  connectivity_plus:
+    :path: Flutter/ephemeral/.symlinks/plugins/connectivity_plus/macos
+  desktop_drop:
+    :path: Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos
+  file_picker:
+    :path: Flutter/ephemeral/.symlinks/plugins/file_picker/macos
+  flutter_gemma:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_gemma/macos
+  flutter_inappwebview_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_inappwebview_macos/macos
+  flutter_secure_storage_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_secure_storage_macos/macos
+  flutter_tts:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_tts/macos
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+  large_file_handler:
+    :path: Flutter/ephemeral/.symlinks/plugins/large_file_handler/macos
+  local_auth_darwin:
+    :path: Flutter/ephemeral/.symlinks/plugins/local_auth_darwin/darwin
+  media_kit_libs_macos_video:
+    :path: Flutter/ephemeral/.symlinks/plugins/media_kit_libs_macos_video/macos
+  media_kit_video:
+    :path: Flutter/ephemeral/.symlinks/plugins/media_kit_video/macos
+  mobile_scanner:
+    :path: Flutter/ephemeral/.symlinks/plugins/mobile_scanner/darwin
+  package_info_plus:
+    :path: Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos
+  screen_retriever_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos
+  shared_preferences_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin
+  speech_to_text:
+    :path: Flutter/ephemeral/.symlinks/plugins/speech_to_text/darwin
+  sqflite_darwin:
+    :path: Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin
+  tray_manager:
+    :path: Flutter/ephemeral/.symlinks/plugins/tray_manager/macos
+  url_launcher_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
+  video_player_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/video_player_macos/macos
+  volume_controller:
+    :path: Flutter/ephemeral/.symlinks/plugins/volume_controller/macos
+  wakelock_plus:
+    :path: Flutter/ephemeral/.symlinks/plugins/wakelock_plus/macos
+  webview_flutter_wkwebview:
+    :path: Flutter/ephemeral/.symlinks/plugins/webview_flutter_wkwebview/darwin
+  window_manager:
+    :path: Flutter/ephemeral/.symlinks/plugins/window_manager/macos
+
+SPEC CHECKSUMS:
+  connectivity_plus: 4adf20a405e25b42b9c9f87feff8f4b6fde18a4e
+  CwlCatchException: 7acc161b299a6de7f0a46a6ed741eae2c8b4d75a
+  CwlCatchExceptionSupport: 54ccab8d8c78907b57f99717fb19d4cc3bce02dc
+  desktop_drop: 10a3e6a7fa9dbe350541f2574092fecfa345a07b
+  file_picker: 7584aae6fa07a041af2b36a2655122d42f578c1a
+  flutter_gemma: c11ad071486512e874e419e25e1e503b85f06803
+  flutter_inappwebview_macos: c2d68649f9f8f1831bfcd98d73fd6256366d9d1d
+  flutter_secure_storage_macos: 7f45e30f838cf2659862a4e4e3ee1c347c2b3b54
+  flutter_tts: ae915565cc6948444b513acc8ee021993281e027
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+  large_file_handler: b337fef756ae925be9c28112a81c7c4275d91c45
+  local_auth_darwin: c3ee6cce0a8d56be34c8ccb66ba31f7f180aaebb
+  media_kit_libs_macos_video: 85a23e549b5f480e72cae3e5634b5514bc692f65
+  media_kit_video: fa6564e3799a0a28bff39442334817088b7ca758
+  mobile_scanner: 9157936403f5a0644ca3779a38ff8404c5434a93
+  OrderedSet: e539b66b644ff081c73a262d24ad552a69be3a94
+  package_info_plus: f0052d280d17aa382b932f399edf32507174e870
+  screen_retriever_macos: c5508cc3c66ff0d4db650480cf0ab691e220d933
+  shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
+  speech_to_text: 3b313d98516d3d0406cea424782ec25470c59d19
+  sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
+  tray_manager: a104b5c81b578d83f3c3d0f40a997c8b10810166
+  url_launcher_macos: f87a979182d112f911de6820aefddaf56ee9fbfd
+  video_player_macos: 327375699d6336b3164f0dc052a68b32ef0fd6ba
+  volume_controller: 5c068e6d085c80dadd33fc2c918d2114b775b3dd
+  wakelock_plus: 917609be14d812ddd9e9528876538b2263aaa03b
+  webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d
+  window_manager: 1d01fa7ac65a6e6f83b965471b1a7fdd3f06166c
+
+PODFILE CHECKSUM: 09b70b5c799f0b8cd4e8b02ed865ebbfc6c71232
+
+COCOAPODS: 1.16.2
