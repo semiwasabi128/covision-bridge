@@ -11,10 +11,11 @@
 //  5. 回寫 topic_terms（品種→物種關聯——從同層兄弟資料夾推導）
 
 import 'dart:convert';
-import '../../core/dev_paths.dart';
 
 import 'package:dio/dio.dart';
 import 'dart:io';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import 'package:flutter/foundation.dart';
 
@@ -23,9 +24,6 @@ import '../brain_container/brain_database.dart';
 class VectorSketchService {
   VectorSketchService._();
   static final VectorSketchService instance = VectorSketchService._();
-
-  static const _sketchPath =
-      '06_AI協作與知識庫/向量資料素描.md'; // 寫到知識庫根（記憶區）
 
   /// 執行素描。回傳 MD 全文。
   Future<String> run({bool writeBack = true}) async {
@@ -138,7 +136,12 @@ class VectorSketchService {
       debugPrint('[VectorSketch] memories 寫入失敗: $e');
     }
     try {
-      final f = File(resolveDevPath('~/Developer/bridge_app/docs/向量資料素描.md'));
+      // [小葵 2026-09-25 開源整備] 原寫死 ~/Developer/bridge_app/docs/——
+      // 開發者機器沒這路徑，會憑空創目錄。改寫到使用者自己的 AppSupport
+      // 知識庫（跨平台、無中文檔名 git 混亂），repo 的 docs/ 只留匯出範本。
+      final supportDir = await getApplicationSupportDirectory();
+      final f = File(p.join(supportDir.path, 'sketch', 'vector_sketch.md'));
+      await f.create(recursive: true);
       await f.writeAsString(md);
       debugPrint('[VectorSketch] ✅ 素描寫檔 ${f.path}');
     } catch (e) {
