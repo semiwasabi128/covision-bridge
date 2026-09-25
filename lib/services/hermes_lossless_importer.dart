@@ -256,7 +256,14 @@ class HermesLosslessImporter {
         if (v == null) continue;
         final id = 'mem_lossless_${nowMs}_${i.toString().padLeft(6, '0')}_${Random().nextInt(99999)}';
         final title = d.sessionTitle ?? '對話 ${d.sessionId.substring(0, 12)}';
-        final embeddingJson = jsonEncode(v);
+        // [小葵 2026-09-25 根因修復] embedding 必須是 f32 little-endian BLOB
+        // （vector_full_scan 擴展只吃 binary）——之前 jsonEncode 成字串，
+        // 917 塊向量形同虛設、語意搜尋永遠查不到（檢索驗收抓包）。
+        final embBytes = Uint8List(v.length * 4);
+        final embView = ByteData.view(embBytes.buffer);
+        for (var j = 0; j < v.length; j++) {
+          embView.setFloat32(j * 4, v[j], Endian.little);
+        }
         database.db.execute(
           'INSERT INTO agent_memories '
           '(id, title, content, tags, memory_type, embedding, '
@@ -268,7 +275,7 @@ class HermesLosslessImporter {
             d.content,
             jsonEncode(['hermes', '對話歷史', '完整匯入']),
             memoryType,
-            embeddingJson,
+            embBytes,
             (double.parse(d.timestamp)).round(),
             companionId,
           ],
