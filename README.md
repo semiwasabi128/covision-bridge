@@ -2,6 +2,8 @@
 
 **The Covision App for Humans and AI.**
 
+[English](README_EN.md) | [繁體中文](README.md)
+
 > 一座讓人類與 AI「共同看見」的橋。不是工具，是同一個視野裡的夥伴。
 
 **⚠️ 早期開發中（Work in Progress）** — 功能未齊、隨時 refactor。歡迎圍觀程式碼與理念、參與討論；暫不建議日常使用，也未提供安裝包。
