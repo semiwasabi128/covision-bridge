@@ -13,6 +13,14 @@ __pycache__/
 .swiftpm/
 migrate_working_dir/
 
+# 內部工作區（開發機專用，不進 repo）
+/.hermes/
+/docs/specs/2026-09-21-morning-tea-web.md
+morning-tea/
+
+# 測試自動生成報告（跑測試會重寫）
+/test/reports/
+
 # IntelliJ related
 *.iml
 *.ipr

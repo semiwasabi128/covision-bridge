@@ -38,6 +38,10 @@ flutter run -d macos
 
 需要 Flutter 穩定版。目前主要支援 macOS 桌面。
 
+> **開發路徑覆寫**：部分本地服務（星系資源、agent 工具）預設在 `~/Developer/bridge_app`
+> 找專案根。clone 到別的位置時，設定環境變數 `BRIDGE_APP_HOME=/path/to/covision-bridge`
+> 即可對位。
+
 ## 專案結構
 
 ```

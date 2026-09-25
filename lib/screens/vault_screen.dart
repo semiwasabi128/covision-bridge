@@ -6,7 +6,7 @@
 // 左側標籤面板 + 右側詳情面板
 // 三模式搜尋：全文 / 語意 / 標籤
 //
-// 設計文件：/Volumes/DATA/橋樑計劃/02-架構設計/向量資料庫與畫布交互設計.md
+// 設計文件：docs/COVISION_MANIFESTO.md
 
 import 'dart:io';
 import 'package:bridge_app/services/material_pool_service.dart';
@@ -1738,8 +1738,8 @@ class VaultScreenState extends State<VaultScreen> {
   }
 
   /// [小葵 2026-09-09 Blue 令] 葉段分組 key——同葉名（品種名）跨根合併。
-  /// 例：Peter資料區/.../Blue陽台/象耳鹿角蕨子株 與
-  /// 01_現況紀錄/.../Blue陽台/象耳鹿角蕨子株 → 同組「象耳鹿角蕨子株」。
+  /// 例：人名資料區/.../北側陽台/象耳鹿角蕨子株 與
+  /// 01_現況紀錄/.../北側陽台/象耳鹿角蕨子株 → 同組「象耳鹿角蕨子株」。
   /// （日期折疊後）葉段就是人類分類的最小單位——品種名。
   String _leafGroupKey(String folder) {
     final folded = _foldDateSegments(folder);
@@ -1770,7 +1770,7 @@ class VaultScreenState extends State<VaultScreen> {
           : '';
       // [小葵 2026-09-09 Blue 令] 品種級分組加強——葉段 key：
       // 同一資料夾名（象耳鹿角蕨子株）在多個授權根有副本
-      // （Peter資料區/03_照片紀錄/... vs 01_現況紀錄/照片紀錄/...）
+      // （人名資料區/03_照片紀錄/... vs 01_現況紀錄/照片紀錄/...）
       // 一律併成同一組。葉名衝突跨主題時才退回折疊全路徑。
       final key = folder.isEmpty
           ? '（根目錄散檔）'

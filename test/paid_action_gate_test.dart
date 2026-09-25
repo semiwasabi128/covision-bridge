@@ -15,17 +15,19 @@ void main() {
     expect(v2.allowed, true);
   });
 
-  test('超過上限誠實擋下（保險絲）：30 發後第 31 發必擋', () async {
+  test('拆牆後仍誠實計數（2026-09-24 Blue 拍板）：上限移除，計數照舊', () async {
     SharedPreferences.setMockInitialValues({});
-    // 不依賴跨測試狀態——真的跑滿預設上限 30 發
     for (var i = 0; i < 30; i++) {
       final v = await PaidActionGate.instance.checkAndReserve(PaidActionKind.image);
-      expect(v.allowed, true, reason: '第 ${i + 1} 發應放行');
+      expect(v.allowed, true, reason: '第 ${i + 1} 發應放行（無上限）');
     }
+    // 第 31 發仍放行——牆已拆，但計數持續（帳要看，牆不擋）
     final v31 = await PaidActionGate.instance.checkAndReserve(PaidActionKind.image);
-    expect(v31.allowed, false);
-    expect(v31.reason, contains('上限'));
-    expect(v31.reason, contains('30/30'));
+    expect(v31.allowed, true);
+    expect(v31.reason, contains('無上限'));
+    // 計數有在走
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getInt('paid_gate.count_image'), 31);
   });
 
   test('跨日自動重置', () async {
@@ -37,15 +39,15 @@ void main() {
     expect(v.allowed, true); // 舊日計數歸零
   });
 
-  test('video/music 各自獨立額度', () async {
+  test('video/music 各自獨立計數（拆牆後計數獨立性不變）', () async {
     SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('paid_gate.cap_video', 0);
-    await prefs.setString('paid_gate.date',
-        DateTime.now().toIso8601String().substring(0, 10));
     final video = await PaidActionGate.instance.checkAndReserve(PaidActionKind.video);
     final music = await PaidActionGate.instance.checkAndReserve(PaidActionKind.music);
-    expect(video.allowed, false); // video 爆了
-    expect(music.allowed, true); // music 不受影響
+    expect(video.allowed, true); // 牆已拆——video 一律放行
+    expect(music.allowed, true); // music 照常
+    // 計數各自獨立
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getInt('paid_gate.count_video'), 1);
+    expect(prefs.getInt('paid_gate.count_music'), 1);
   });
 }

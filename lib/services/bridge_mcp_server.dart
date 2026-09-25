@@ -72,8 +72,16 @@ class BridgeMcpServer {
   /// 給 unit test 用，避免撞到執行中的 Flutter App 佔用的 8420 port
   @visibleForTesting
   static BridgeMcpServer createForTesting({required int port}) {
-    return BridgeMcpServer._(port: port);
+    final s = BridgeMcpServer._(port: port);
+    // 測試實例跳過 token 初始化：測試環境無 Flutter binding / path_provider，
+    // token 初始化必炸。跳過後 _authToken 保持 null——_tokenGate 對 null
+    // 本來就放行，測試照常打端點。生產實例（預設建構子）fail-close 不變。
+    s._skipTokenInit = true;
+    return s;
   }
+
+  /// [2026-09-25 開源整備] 測試實例跳過 token fail-close 判定
+  bool _skipTokenInit = false;
 
   HttpServer? _server;
   final int port;
@@ -301,17 +309,25 @@ class BridgeMcpServer {
     router.post('/mcp', _handleJsonRpc);
     router.get('/mcp/discover', _handleMcpDiscover);
 
+    final handler = const Pipeline()
+        .addMiddleware(logRequests(logger: (msg, isError) => debugPrint('[MCP] $msg')))
+        .addMiddleware(_tokenGate())
+        .addHandler(router.call);
+
+    if (_skipTokenInit) {
+      // 測試實例：跳過 token 初始化（見 createForTesting 註解）
+      debugPrint('[MCP] 測試實例：跳過 token 門禁初始化');
+      _server = await shelf_io.serve(handler, InternetAddress.loopbackIPv4, port);
+      debugPrint('[MCP] Canvas MCP Server（測試）啟動於 http://localhost:$port');
+      return;
+    }
+
     await _ensureAuthToken();
     if (_tokenInitFailed) {
       // [小葵 2026-09-24 開源安全域] fail-close：token 不存在 = 不 serve。
       debugPrint('[MCP] fail-close：門禁 token 未就緒，MCP 服務不啟動');
       return;
     }
-
-    final handler = const Pipeline()
-        .addMiddleware(logRequests(logger: (msg, isError) => debugPrint('[MCP] $msg')))
-        .addMiddleware(_tokenGate())
-        .addHandler(router.call);
 
     try {
       _server = await shelf_io.serve(handler, InternetAddress.loopbackIPv4, port);

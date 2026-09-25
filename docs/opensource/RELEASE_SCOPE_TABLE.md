@@ -9,13 +9,13 @@
 |---|---|
 | `spikes/001-provenance-stamp/`（含 brain_copy.db 911MB×2） | 私人記憶資料庫本體 |
 | `python/`（27,379 檔，879MB，含 .venv/torch） | 虛擬環境與 site-packages，不屬於 repo |
-| `morning-tea/` + `docs/specs/2026-09-21-morning-tea-web.md` | 9/25 一口一次性活動（記憶：Morning Tea=一次性），過期素材 |
+| `docs/specs/2026-09-21-morning-tea-web.md`（+ morning-tea/ 本地目錄） | 9/25 一次性活動稿，含私人資產路徑——已移除（其餘 specs 為設計文件，C 區保留） |
 | 全部 `HANDOFF_*.md`（root，10 檔） | Agent 間交接文件＝私人工作對話紀錄 |
 | `docs/handoff/`（4 檔） | **[2026-09-24 補列]** 對話補遺＝私人對話紀錄 |
 | `docs/FIVE_MODES_SESSION_LOG.md` | **[2026-09-24 補列]** 開發對話全記錄（Blue 欽定存檔，留本地） |
 | `docs/HANDOFF_2026-08-08.md` | **[2026-09-24 補列]** 交接文件 |
 | `.hermes/CHECKPOINT.md`、`.hermes/checkpoint-2026-07-17.md` | Hermes session checkpoint＝私人對話紀錄 |
-| `docs/benchmarks/vision-blind-*.json`（6 檔） | 內含農場照片完整路徑（Blue陽台/Peter陽台、辣椒/鹿角蕨）＝個資 |
+| `docs/benchmarks/vision-blind-*.json`（6 檔） | 內含農場照片完整路徑（家庭陽台、辣椒/鹿角蕨）＝個資 |
 | `11880`、`12672`（root 兩個 PNG） | 無名截圖檔（截圖內容未驗證） |
 | `CONTEXT.md` | 開發期共享語言文件，含內部人格細節（小橋） |
 | `NODE_EXECUTION_DEEP_ANALYSIS_20260815.md`、`SOGO_LIGHT_THEME.md`、`design_improvement_plan.md` | 內部分析筆記 |

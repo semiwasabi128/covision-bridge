@@ -4,8 +4,7 @@
 **本尊（唯一）**：`~/Developer/bridge_app`（系統碟，2026-08-04 搬移完成）
 
 舊副本已封存：
-- `/Volumes/DATA/橋樑計劃/03-App-原始碼/bridge_app` — 外接碟舊副本（文件用，**不得修改**）
-- `$HOME/Documents/bridge-app/` → `_ARCHIVED_bridge_app_DO_NOT_USE_20260627`
+- 外接備份碟上的舊副本 — 文件用，**不得修改**
 
 所有 grep / read_file / patch / flutter build 一律在**系統碟本尊** `~/Developer/bridge_app` 進行。
 派工給 subagent 時，prompt 內務必明寫絕對路徑 `$HOME/Developer/bridge_app`，並要求第一步用
