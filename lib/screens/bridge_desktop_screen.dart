@@ -109,6 +109,8 @@ import '../widgets/memory_pressure_dialog.dart'; // [教練 Agent 2026-07-22] #4
 import '../services/provider_router.dart'; // [教練 Agent 2026-07-22] 動態 Agent 路由
 import '../services/provider_registry.dart'; // [教練 Agent 2026-07-30] 動態 Provider 探測
 import '../services/brain_container/embedding/embedding_service.dart'; // [教練 Agent 2026-07-22] embedding for knowledge indexing
+import '../services/hermes_lossless_importer.dart'; // [小葵 2026-09-24] 大搬家·完整匯入（917 根治版）
+import '../services/brain_container/brain_database.dart'; // [小葵 2026-09-24] importer 依賴
 import '../services/brain_container/brain_container_service.dart'; // [教練 Agent 2026-07-22] wait for brain init
 import '../widgets/canvas/v2/canvas_controller.dart';
 import '../widgets/canvas/v2/canvas_mcp_registry.dart';
@@ -339,6 +341,13 @@ class _BridgeDesktopScreenState extends State<BridgeDesktopScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _galaxySaver.reportActivity();
     });
+    // [小葵 2026-09-24 Blue 大搬家·完整匯入] 啟動時跑一次 lossless importer
+    // 把外部 agent 對話歷史（jsonl）寫進 agent_memories（含 768 維
+    // embedding）——memoryFlash 才能查到「你們的對話」。
+    // idempotent：marker + 內容指紋雙保險（917 重複事故 2026-09-25 根治）。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_runLosslessImport());
+    });
     // [教練 Agent 2026-08-08] Persistent ChatController——MCP 不依賴 tab 狀態
     _persistentChatController = ChatController();
     // 讓 persistent controller 的 Agent Loop 回應可以被 MCP get_latest_messages 讀到
@@ -414,6 +423,35 @@ class _BridgeDesktopScreenState extends State<BridgeDesktopScreen> {
   /// [收據搜尋 RC2.5] 開啟全局搜尋 overlay
   void _openReceiptsSearch() {
     ReceiptsSearchManager.open(context, onAction: _executeHop);
+  }
+
+  /// [小葵 2026-09-24 Blue 大搬家·完整匯入] 把外部 agent 對話歷史（jsonl）
+  /// 讀進 agent_memories（含 768 維向量），idempotent。
+  /// 不阻塞 UI——背景跑。
+  Future<void> _runLosslessImport() async {
+    try {
+      // 等 EmbeddingService 就緒（App 啟動鏈會 init，這裡保險等一下）
+      if (!EmbeddingService.instance.isModelAvailable) {
+        await EmbeddingService.instance.initialize().timeout(
+          const Duration(seconds: 3),
+          onTimeout: () {},
+        );
+      }
+      if (!EmbeddingService.instance.isModelAvailable) {
+        debugPrint('[LosslessImport] EmbeddingService 未就緒，跳過');
+        return;
+      }
+      final companionId = CompanionStore().activeCompanionId ?? 'shared';
+      final importer = HermesLosslessImporter(
+        database: BrainDatabase.instance,
+        embedder: EmbeddingService.instance,
+        companionId: companionId,
+      );
+      final report = await importer.run();
+      debugPrint('[LosslessImport] 結果：$report');
+    } catch (e, st) {
+      debugPrint('[LosslessImport] 失敗：$e\\n$st');
+    }
   }
 
   /// [收據搜尋 S3 2026-09-08] 執行四動作分派
