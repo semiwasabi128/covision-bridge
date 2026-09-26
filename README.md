@@ -4,6 +4,11 @@
 
 [English](README_EN.md) | [繁體中文](README.md)
 
+[![CI](https://github.com/semiwasabi128/covision-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/semiwasabi128/covision-bridge/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/semiwasabi128/covision-bridge)](https://github.com/semiwasabi128/covision-bridge/releases)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%C2%B7%20Flutter-02569B)](https://flutter.dev)
+
 > 一座讓人類與 AI「共同看見」的橋。不是工具，是同一個視野裡的夥伴。
 
 ![Covision Bridge — 畫布](docs/screenshots/canvas.webp)
