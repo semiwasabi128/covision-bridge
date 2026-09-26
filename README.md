@@ -70,6 +70,7 @@ docs/          # 設計規範、宣言、架構地圖
 - [共視宣言（Covision Manifesto）](docs/COVISION_MANIFESTO.md) — 產品定位錨點
 - [資料主權宣言（Data Sovereignty Manifesto）](docs/DATA_SOVEREIGNTY_MANIFESTO.md)
 - [🧭 羅盤系統（Compass System）](docs/COMPASS_SYSTEM.md) — 人機共視的決策中樞：器官地圖 + 規則中心 + 軍醫藥箱，Agent 與人類讀同一份真相
+- [🌳 生命樹（Life Tree）](docs/LIFE_TREE.md) — 失敗即數位資產：歷史樹+反思樹雙幹、羅盤精靈儀表、做夢節律——走對走錯都記錄，自我進化有資料結構
 - [🧠 向量大腦（Vector Brain）](docs/VECTOR_BRAIN.md) — App 的記憶器官：四種記憶形態、混合搜尋、本地嵌入管線
 - [🔗 八大系統串聯縱覽（System Wiring）](docs/SYSTEM_WIRING.md) — 對話-畫布-向量DB-圖譜-嵌入-羅盤-金鑰匙-本地模型：一句話如何流過整顆大腦
 - [開源宣言](docs/opensource/MANIFESTO_DRAFT.md) — 為何公開、相信什麼、不公開什麼

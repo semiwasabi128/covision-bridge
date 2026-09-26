@@ -126,6 +126,7 @@ Agent 用 MCP 語意工具蓋工作流（v0.4.0 LightUp 的手）：
 | 文件 | 內容 |
 |---|---|
 | [COMPASS_SYSTEM.md](COMPASS_SYSTEM.md) | 羅盤：三層所有權、軍醫三件套、人機共視雙向道 |
+| [LIFE_TREE.md](LIFE_TREE.md) | 生命樹：歷史樹+反思樹雙幹、精靈儀表、做夢節律——失敗即數位資產 |
 | [VECTOR_BRAIN.md](VECTOR_BRAIN.md) | 向量大腦：四種記憶形態、混合搜尋、嵌入管線 |
 | [DATA_SOVEREIGNTY_MANIFESTO.md](DATA_SOVEREIGNTY_MANIFESTO.md) | 資料主權宣言：金鑰匙三原則的完整論述 |
 | [COVISION_MANIFESTO.md](COVISION_MANIFESTO.md) | 共視宣言：產品定位錨點 |

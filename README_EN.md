@@ -70,6 +70,7 @@ Most docs are currently in Traditional Chinese — English translations are on t
 - [Covision Manifesto](docs/COVISION_MANIFESTO.md) — the product positioning anchor
 - [Data Sovereignty Manifesto](docs/DATA_SOVEREIGNTY_MANIFESTO.md)
 - [🧭 Compass System](docs/COMPASS_SYSTEM.md) — the human-agent co-vision decision hub: organ map + rule center + medic kit. Agents and humans read the same source of truth
+- [🌳 Life Tree](docs/LIFE_TREE.md) — failure as digital asset: history tree + reflection tree, the compass sprite's gauges, and the dream rhythm — every step recorded, right or wrong, so self-evolution has a data structure
 - [🧠 Vector Brain](docs/VECTOR_BRAIN.md) — the app's memory organ: four memory forms, hybrid search, local embedding pipeline
 - [🔗 System Wiring](docs/SYSTEM_WIRING.md) — chat–canvas–vector DB–galaxy–embedding–compass–golden key–local model: how one sentence flows through the whole brain
 - [v0.4.0 LightUp](docs/V040_AGENT_AS_USER_DESIGN_INPUTS.md) — Agent-as-User: 7 semantic tools that make agents real users
