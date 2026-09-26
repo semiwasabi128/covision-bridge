@@ -1,10 +1,10 @@
 // Bridge Motion System — 動態體感層
 // 把 BridgeDS motion tokens 變成可重用的 transition widgets
-// 設計來源：xAI 氛圍 × Raycast 色彩 × Stripe 粒子 × Figma 動態 × Miro 無限畫布
+// 設計質地：暗色科技氛圍 × 色彩質感 × 向量粒子 × 動態活潑 × 無限畫布
 //
 // 原則：
 // - 所有動畫使用 BridgeDS 定義的 curve + duration，不散落 magic number
-// - 頁面轉場有方向感（Miro 無限畫布式平移）
+// - 頁面轉場有方向感（無限畫布式平移）
 // - 元素入場有層次（staggered，不是全部同時出現）
 // - 回饋即時且明確（按鈕亮燈、鎖定消失）
 // - 動畫不阻塞使用者操作（forward 但不阻塞）
@@ -16,7 +16,7 @@ import 'bridge_design_system.dart';
 /// Bridge Motion — 頁面轉場
 /// ═══════════════════════════════════════════════════
 
-/// Miro 式無限畫布轉場——頁面像在無限畫布上平移
+/// 無限畫布轉場——頁面像在無限畫布上平移
 /// 用於主要 tab 切換、歡迎→召喚→桌面之間的流程轉場
 class BridgeCanvasTransition extends PageRouteBuilder {
   BridgeCanvasTransition({
@@ -608,7 +608,7 @@ class _BridgePulseDotState extends State<BridgePulseDot>
 }
 
 /// ═══════════════════════════════════════════════════
-/// Bridge Motion — 進度條（Miro 風格）
+/// Bridge Motion — 進度條（無限畫布風格）
 /// ═══════════════════════════════════════════════════
 
 /// 帶有光暈的進度條——用於 API 測試、生成等待

@@ -1,7 +1,7 @@
 // ignore_for_file: dead_code, dead_null_aware_expression
 // Bridge Desktop 主畫面 — Sprint 14.5 設計系統版
 // 佈局：TopBar(64) + Sidebar(240) + Canvas(flex) + ContextPanel(320) + StatusBar(32)
-// 設計：xAI 氛圍 × Raycast 色彩 × Stripe 粒子 × Figma 動態 × Miro 無限畫布
+// 設計：暗色科技氛圍 × 色彩質感 × 向量粒子 × 動態活潑 × 無限畫布
 
 import '../app.dart'; // [D002 2026-08-10] appNavigatorKey
 import '../core/dev_paths.dart';
@@ -2714,7 +2714,7 @@ class _BridgeDesktopScreenState extends State<BridgeDesktopScreen> {
               switchInCurve: BridgeDS.transitionCanvas,
               switchOutCurve: BridgeDS.transitionSlide,
               transitionBuilder: (child, animation) {
-                // [Phase 0 2026-07-17] Miro 無限畫布風格轉場
+                // [Phase 0 2026-07-17] 無限畫布風格轉場
                 // 進場：scale + fade + slide（從右下微滑入）
                 // 退場：fade + slide（往左上微滑出）
                 final isIn = animation.value < 0.5;

@@ -71,7 +71,7 @@
   - 9 級距字體 token、6 級距圖示 token、33 個 BridgeDSColors token
   - 主題包（Theme Pack）擴充介面設計 — 未來開源社群可下載主題包
   - **所有新 UI 程式碼必須遵守此原則**，違規 PR 不可 merge
-- **[DESIGN.md](DESIGN.md)** — 5 套設計系統融合的原始規範（xAI / Raycast / Stripe / Figma / Miro）
+- **[DESIGN.md](DESIGN.md)** — 設計系統的原始規範
 - **[Bridge 統合設計語言 (Bridge Unified Design Language)](docs/BRIDGE_UNIFIED_DESIGN_LANGUAGE.md)** — v1.0，2026-08-08 啟用
   - 六源蒸餾 → 六種 Bridge 能力 → 第七個結果：共視
   - 三層不反轉：功能骨架(A) → 關係推演(B) → 事件氣氛(C)
@@ -87,10 +87,10 @@
   - **未來開源社群改主題包就能一鍵對齊全 App，不用碰 widget 程式碼**
   - ⚠️（2026-09-21 Blue 抓包）**新元件（AlertDialog/彈窗/SnackBar）文字層級必走 Tier、顏色必走 BridgeDSColors——禁 `Theme.of(context).textTheme` 與 Material 預設**，dialog 內對應表見該文件「AlertDialog 鐵則」節
 - **[橋樑氣氛設計語言 (Bridge Atmosphere Design Language)](docs/BRIDGE_ATMOSPHERE_LANGUAGE.md)** — v0.1 草稿，2026-08-06 啟用
-  - Active Theory 設計紀律的蒸餾 + SemiMaker 時刻表（24h 內 21 次時針分針重疊）
+  - 設計紀律的蒸餾 + SemiMaker 時刻表（24h 內 21 次時針分針重疊）
   - LOGO 形狀規則（鎖死 5 條 + 社群可改事項）
   - 主題包架構：社群設計者可獨立設計氣氛主題包，不影響功能層
-  - GPU 預算 ≤ 5% / CPU ≤ 8% / 記憶體 ≤ 200MB（與 Active Theory 自家紀律一致）
+  - GPU 預算 ≤ 5% / CPU ≤ 8% / 記憶體 ≤ 200MB（硬性紀律，不可超標）
 - 死代碼（2026-08-04 清理）：`lib/widgets/canvas/open_canvas_workspace.dart` (2139 行) — V2 取代
 
 ## 🗺️ 架構地圖（必讀）

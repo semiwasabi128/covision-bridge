@@ -6,6 +6,10 @@
 
 > A bridge where humans and AI *see together*. Not a tool — a companion in the same field of vision.
 
+![Covision Bridge — Canvas](docs/screenshots/canvas.webp)
+
+![Covision Bridge — Brain Galaxy](docs/screenshots/brain-galaxy.webp)
+
 **⚠️ Work in Progress** — Features are incomplete and the codebase changes fast. You're welcome to explore the code and the ideas, and to join the discussion. Daily use is not recommended; no installers are provided.
 
 ## What is this

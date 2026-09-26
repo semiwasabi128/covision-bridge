@@ -34,8 +34,8 @@
 ### Figma Tokens Studio
 
 1. 安裝 Figma Tokens Studio plugin
-2. 點「Load from file」或「Set JSONBin」
-3. 選 `figma-tokens.json`
+2. 點「Load from file」，選 `figma-tokens.json`（本地檔案，推薦——資料不出你的機器）
+3. （可選）「Set JSONBin」走雲端同步——第三方雲服務，token 會上傳到別人的伺服器，請自行斟酌
 
 ### Web / SCSS
 

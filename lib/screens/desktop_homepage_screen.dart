@@ -4,7 +4,7 @@
 // 使用者的想像：未來這裡是社群創作者分享外掛/skill/資產包/活動的地方。
 // 現在先佔位，只呈現初次體驗教學引導。
 //
-// 設計：BridgeDS 暗色風格 + Miro 無限轉場動態
+// 設計：BridgeDS 暗色風格 + 無限轉場動態
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

@@ -3,7 +3,7 @@
 
 **Audit Date:** 2026-07-18  
 **Scope:** `bridge_desktop_screen.dart` focusing on `_buildHomepage()`, `_buildCompanionHall()`, `_buildTopBar()`, `_buildSidebarCompanionFooter()`  
-**Design System:** BridgeDS (xAI × Raycast × Stripe × Figma × Miro fusion)
+**Design System:** BridgeDS（五種設計質地的融合）
 
 ---
 

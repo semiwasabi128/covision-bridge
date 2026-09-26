@@ -58,7 +58,7 @@
 | 刪節點保留連線 | Keep all links（自動 rewire） | 🔴 值得抄 |
 | Ctrl+G | 群組 frame | 🔴（Phase 4+） |
 
-**極客大神優化提案**（2026 檢閱：React Flow 12 / ComfyUI Nodes 2.0 / Figma-Miro 慣例）：
+**極客大神優化提案**（2026 檢閱：React Flow 12 / ComfyUI Nodes 2.0 / 業界畫布慣例）：
 
 | 提案 | 來源 | 採用決定 |
 |---|---|---|
@@ -66,7 +66,7 @@
 | **Easy Connect（整節點邊緣可接線）** | React Flow 官方範例 | 📌 評估中——節點整條左/右邊都是把手，不再只有小圓點 |
 | Delete Middle Node（刪中間節點自動 rewire） | React Flow 官方範例 | ✅ 已在校準表（同 ComfyUI Keep all links） |
 | Helper Lines 對齊線＋吸附 | React Flow Pro | 📌 Phase 2 排隊（排版整齊感） |
-| Space 按住平移（Figma/Miro 標準） | Figma 慣例 | ✅ 補進快捷鍵批次 |
+| Space 按住平移（業界標準） | 畫布工具慣例 | ✅ 補進快捷鍵批次 |
 | Mini Map 小地圖 | ComfyUI 2026 前端 | 📌 大畫布導航用，Phase 4 |
 | Subgraph 子圖（選取打包成超級節點） | ComfyUI 穩定版 | 📌 Phase 4+（等同我們 subWorkflow 節點的 UI 化） |
 | **Linear Mode 線性模式**（畫布↔清單雙視圖） | ComfyUI Nodes 2.0 路線圖 | 💡 長期——我們的 chat_panel 已是雛形，未來可做「畫布⇄對話」同步切換 |
