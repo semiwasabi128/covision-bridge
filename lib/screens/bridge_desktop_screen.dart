@@ -1242,6 +1242,20 @@ class _BridgeDesktopScreenState extends State<BridgeDesktopScreen> {
       return reg.getAnnotations();
     };
 
+    // [v0.4.0 開光 · 2026-09-26] app_tap——語意點擊走 registry（workspace 注入）
+    mcp.onTap = (target) {
+      // target 格式：canvas_toolbar:save|copy|test|run
+      final parts = target.split(':');
+      if (parts.length != 2 || parts[0] != 'canvas_toolbar') {
+        return {'success': false, 'message': '未知 target: $target'};
+      }
+      final handler = reg.onTapButton;
+      if (handler == null) {
+        return {'success': false, 'message': '畫布未開啟（workspace 未掛載）'};
+      }
+      return handler(parts[1]);
+    };
+
     // 執行工作流 — 透過 registry 呼叫 workspace 的 WorkflowExecutor
     mcp.onExecute = () async {
       if (reg.onExecute != null) {

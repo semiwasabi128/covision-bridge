@@ -146,7 +146,8 @@ void main() {
       expect(result['protocolVersion'], '2026-07-28');
     });
 
-    test('POST /mcp tools/list → 22 tools + 每個有 inputSchema (JSON Schema 2020-12)', () async {
+    // [v0.4.0 開光 2026-09-26] 22 → 29：app_view/app_look/window_map/app_tap/canvas_zoom/app_permissions/window_control
+    test('POST /mcp tools/list → 29 tools + 每個有 inputSchema (JSON Schema 2020-12)', () async {
       final res = await _httpPost(
         'http://127.0.0.1:$actualPort/mcp',
         body: {
@@ -172,7 +173,7 @@ void main() {
       expect(result['ttlMs'], 60000);
       expect(result['cacheScope'], 'private');
       final tools = result['tools'] as List<dynamic>;
-      expect(tools.length, 22);
+      expect(tools.length, 29);
 
       // 每個 tool 都必須有 inputSchema（JSON Schema 2020-12 結構）
       for (final t in tools) {

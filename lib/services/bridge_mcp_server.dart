@@ -20,6 +20,9 @@ import 'life_tree/global_notice_channel.dart'; // [小葵 2026-09-21] 全域對�
 import '../widgets/canvas/v2/canvas_mcp_registry.dart'; // [教練 Agent 2026-07-20] 渲染感應器
 import 'package:shelf_router/shelf_router.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart' show Offset, Size; // [v0.4.0 開光] canvas_zoom focal + window_control
+import 'package:window_manager/window_manager.dart'; // [v0.4.0 開光] window_map/window_control 主視窗幾何
+import 'macos_desktop_shell_channel.dart'; // [v0.4.0 開光] window_map 懸浮窗快照
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 import 'package:bridge_app/models/entity_graph/entity.dart';
@@ -216,6 +219,9 @@ class BridgeMcpServer {
   /// target: home | companion | chat | canvas | brain | system
   /// sub: model | pairing | files | settings (僅 system tab 有子頁面)
   void Function(String target, String? sub)? onNavigate;
+  // ── [v0.4.0 開光 · 2026-09-26] app_tap：語意點擊 callback ──────
+  /// 回傳 null=未接線（-32603）；Map{success, message}=結果
+  Map<String, dynamic>? Function(String target)? onTap;
 
   /// [教練 Agent 2026-07-19] 取得當前 App 狀態
   /// 回傳：{page, systemSub, canvasIndex, isHomepage, isCompanionHall}
@@ -1562,6 +1568,83 @@ class BridgeMcpServer {
         'additionalProperties': false,
       },
     },
+    // ── [v0.4.0 開光] Agent-as-User 心手眼——2026-09-26 ──────────
+    // 設計輸入：docs/V040_AGENT_AS_USER_DESIGN_INPUTS.md（8 撞牆點 → API）
+    {
+      'name': 'app_view',
+      'description': '視網膜拍照：拍 App 當前畫面（base64 PNG）。無參數；不需要導航。要「說看哪就拍哪」請用 app_look。',
+      'inputSchema': {
+        'type': 'object',
+        'properties': <String, dynamic>{},
+        'additionalProperties': false,
+      },
+    },
+    {
+      'name': 'app_look',
+      'description': '語意化視網膜：說看哪就拍哪。target=home/chat/canvas/brain/vault/system/companion/training/app（app=當下畫面不導航）。導航→等渲染→拍照→回 base64 PNG + page。無效 target 回 -32602 帶合法清單。',
+      'inputSchema': {
+        'type': 'object',
+        'properties': {
+          'target': {'type': 'string', 'description': '頁面語意名'},
+        },
+        'required': ['target'],
+        'additionalProperties': false,
+      },
+    },
+    {
+      'name': 'window_map',
+      'description': '每視窗地圖：主視窗幾何 + 懸浮夥伴窗狀態 + 大腦圖譜視窗偵測 + App PID。雙 App 重疊/關錯視窗事故的解藥——先看地圖再動手。',
+      'inputSchema': {
+        'type': 'object',
+        'properties': <String, dynamic>{},
+        'additionalProperties': false,
+      },
+    },
+    {
+      'name': 'app_tap',
+      'description': '語意點擊：用按鈕名而非座標。target=canvas_toolbar:save/copy/test/run（存檔/另存/測試/執行）——與 UI 按鈕同一條程式路徑，零座標模擬。',
+      'inputSchema': {
+        'type': 'object',
+        'properties': {
+          'target': {'type': 'string', 'description': 'canvas_toolbar:save|copy|test|run'},
+        },
+        'required': ['target'],
+        'additionalProperties': false,
+      },
+    },
+    {
+      'name': 'canvas_zoom',
+      'description': '畫布縮放讀寫合一：不帶參數=讀目前 scale；帶 scale=設定（自動 clamp）；帶 action=fit 全覽畫布內容。回傳 before/after scale。',
+      'inputSchema': {
+        'type': 'object',
+        'properties': {
+          'scale': {'type': 'number', 'description': '目標縮放（1.0=100%）。省略=唯讀'},
+          'action': {'type': 'string', 'description': 'fit=縮放到看見全部內容'},
+        },
+        'additionalProperties': false,
+      },
+    },
+    {
+      'name': 'app_permissions',
+      'description': '權限即地圖（紅線是篩選器）：回報 App 能力邊界——sandbox entitlements 聲明 + 外部依賴健康度。agent 行動前先看這張圖，不撞了才知道。',
+      'inputSchema': {
+        'type': 'object',
+        'properties': <String, dynamic>{},
+        'additionalProperties': false,
+      },
+    },
+    {
+      'name': 'window_control',
+      'description': '視窗管理官方 API：action=focus/minimize/center/restore。先 window_map 看地圖再動手。',
+      'inputSchema': {
+        'type': 'object',
+        'properties': {
+          'action': {'type': 'string', 'description': 'focus | minimize | center | restore'},
+        },
+        'required': ['action'],
+        'additionalProperties': false,
+      },
+    },
   ];
 
   /// tools/call dispatch — 對應到舊的 callback
@@ -1760,6 +1843,238 @@ class BridgeMcpServer {
           final templateId = args['templateId'] as String;
           await onLoadTemplate!(templateId);
           return _jsonRpcResult(id, {'resultType': 'complete', 'success': true, 'message': '模板已載入: $templateId'});
+
+        // ── [v0.4.0 開光] Agent-as-User 心手眼 dispatch — 2026-09-26 ──
+        // 語意化工具：看不見就誠實說看不見（available:false + reason），
+        // 參數錯帶合法清單（-32602），不讓 agent 猜。
+
+        case 'app_view':
+          try {
+            final b64 = await AppRetina.capture();
+            if (b64 == null) {
+              return _jsonRpcResult(id, {'resultType': 'complete', 'available': false, 'message': 'App 尚未渲染'});
+            }
+            return _jsonRpcResult(id, {
+              'resultType': 'complete',
+              'available': true,
+              'image': b64,
+              'mimeType': 'image/png',
+              'capturedAt': DateTime.now().toIso8601String(),
+            });
+          } catch (e) {
+            return _jsonRpcResult(id, {'resultType': 'complete', 'available': false, 'message': '視網膜拍照失敗: $e'});
+          }
+
+        case 'app_look':
+          final target = args['target'] as String? ?? '';
+          const validTargets = [
+            'home', 'chat', 'canvas', 'brain', 'vault', 'system',
+            'companion', 'training', 'app',
+          ];
+          if (target.isEmpty || !validTargets.contains(target)) {
+            return _jsonRpcError(id, -32602,
+                'Invalid target: $target. Valid: ${validTargets.join("/")}');
+          }
+          if (onNavigate == null) return error('Navigate not available');
+          if (target != 'app') {
+            onNavigate!(target, null);
+            await Future<void>.delayed(const Duration(milliseconds: 500));
+          }
+          try {
+            final b64 = await AppRetina.capture();
+            if (b64 == null) {
+              return _jsonRpcResult(id, {'resultType': 'complete', 'available': false, 'target': target, 'message': 'App 尚未渲染'});
+            }
+            return _jsonRpcResult(id, {
+              'resultType': 'complete',
+              'available': true,
+              'target': target,
+              'page': target == 'app' ? 'current' : target,
+              'image': b64,
+              'mimeType': 'image/png',
+            });
+          } catch (e) {
+            return _jsonRpcResult(id, {'resultType': 'complete', 'available': false, 'target': target, 'message': '視網膜拍照失敗: $e'});
+          }
+
+        case 'window_map':
+          final map = <String, dynamic>{'pid': pid};
+          try {
+            final bounds = await windowManager.getBounds();
+            final focused = await windowManager.isFocused();
+            map['mainWindow'] = {
+              'width': bounds.width.round(),
+              'height': bounds.height.round(),
+              'x': bounds.left.round(),
+              'y': bounds.top.round(),
+              'focused': focused,
+            };
+          } catch (e) {
+            map['mainWindow'] = {'available': false, 'reason': 'window_manager 未初始化: $e'};
+          }
+          try {
+            // 公開版 shell channel：inspect() 回連線狀態（無逐窗快照 API）
+            final conn = await const MacosDesktopShellChannel().inspect();
+            map['companionPanel'] = {
+              'connected': conn.connected,
+              'platform': conn.platform,
+              'nativePanelAvailable': conn.nativePanelAvailable,
+              if (conn.message.isNotEmpty) 'message': conn.message,
+            };
+          } catch (e) {
+            map['companionPanel'] = {'available': false, 'reason': '懸浮窗檢查失敗: $e'};
+          }
+          return _jsonRpcResult(id, {'resultType': 'complete', ...map});
+
+        case 'app_tap':
+          final target = args['target'] as String? ?? '';
+          if (target.isEmpty) {
+            return _jsonRpcError(id, -32602, 'target required');
+          }
+          final validTaps = [
+            'canvas_toolbar:save', 'canvas_toolbar:copy',
+            'canvas_toolbar:test', 'canvas_toolbar:run',
+          ];
+          if (!validTaps.contains(target)) {
+            return _jsonRpcError(id, -32602,
+                'Invalid target: $target. Valid: ${validTaps.join("/")}');
+          }
+          // 參數驗證先於接線檢查——target 錯就是錯，不管有沒有接線
+          if (onTap == null) return error('Tap handler not connected');
+          final result = onTap!(target);
+          return _jsonRpcResult(id, {'resultType': 'complete', ...?result});
+
+        case 'canvas_zoom':
+          final reg = CanvasMcpRegistry.instance;
+          final ctrl = reg.controller;
+          if (ctrl == null) {
+            return _jsonRpcError(id, -32603, 'Canvas controller not connected');
+          }
+          final scaleArg = args['scale'];
+          final action = args['action'] as String?;
+          if (scaleArg == null && action == null) {
+            // 唯讀
+            final after = ctrl.state.viewport.scale;
+            return _jsonRpcResult(id, {
+              'resultType': 'complete',
+              'before': double.parse(after.toStringAsFixed(3)),
+              'after': double.parse(after.toStringAsFixed(3)),
+              'percent': '${(after * 100).round()}%',
+              'mode': 'read',
+            });
+          }
+          final before = ctrl.state.viewport.scale;
+          if (action == 'fit') {
+            final size = reg.canvasPixelSize;
+            ctrl.fitToContent(size ?? const Size(1200, 800));
+          } else if (scaleArg is num) {
+            final size = reg.canvasPixelSize ?? const Size(1200, 800);
+            final focal = Offset(size.width / 2, size.height / 2);
+            ctrl.zoom(scaleArg.toDouble(), focal);
+          } else {
+            return _jsonRpcError(id, -32602, 'Invalid params: scale (number) or action ("fit")');
+          }
+          await Future<void>.delayed(const Duration(milliseconds: 120));
+          final after = ctrl.state.viewport.scale;
+          return _jsonRpcResult(id, {
+            'resultType': 'complete',
+            'before': double.parse(before.toStringAsFixed(3)),
+            'after': double.parse(after.toStringAsFixed(3)),
+            'percent': '${(after * 100).round()}%',
+            'mode': scaleArg != null ? 'set' : (action == 'fit' ? 'fit' : 'read'),
+          });
+
+        case 'app_permissions':
+          final perms = <String, dynamic>{
+            'pid': pid,
+            'capturedAt': DateTime.now().toIso8601String(),
+          };
+          try {
+            final exePath = Platform.resolvedExecutable;
+            final appRoot = exePath.split('/Contents/MacOS/').first;
+            final r = Process.runSync('codesign', [
+              '-d', '--entitlements', '-', appRoot,
+            ]);
+            final xml = (r.stdout as String) + (r.stderr as String);
+            perms['entitlements'] = {
+              'appSandbox': xml.contains('com.apple.security.app-sandbox'),
+              'networkClient': xml.contains('com.apple.security.network.client'),
+              'networkServer': xml.contains('com.apple.security.network.server'),
+              'audioInput': xml.contains('com.apple.security.device.audio-input'),
+              'userSelectedFilesRead': xml.contains('user-selected.read-only'),
+              'userSelectedFilesReadWrite': xml.contains('user-selected.read-write'),
+              'appleEvents': xml.contains('temporary-exception.apple-events'),
+              'camera': xml.contains('com.apple.security.device.camera'),
+            };
+          } catch (e) {
+            perms['entitlements'] = {'available': false, 'reason': 'codesign 讀取失敗: $e'};
+          }
+          final deps = <String, dynamic>{};
+          try {
+            final r = Process.runSync('osascript', ['-e', 'return "ok"']);
+            deps['osascript'] = r.exitCode == 0 && (r.stdout as String).trim() == 'ok';
+          } catch (_) {
+            deps['osascript'] = false;
+          }
+          try {
+            // 真拍 1x1 驗證（-h 的 exit code 不可靠，會誤報 false）
+            final probe = '/tmp/.bridge_perm_probe.png';
+            final r = Process.runSync(
+                'screencapture', ['-x', '-R0,0,1,1', probe]);
+            final ok = r.exitCode == 0;
+            final f = File(probe);
+            if (f.existsSync()) f.deleteSync();
+            deps['screencapture'] = ok;
+          } catch (_) {
+            deps['screencapture'] = false;
+          }
+          perms['dependencies'] = deps;
+          if (deps['screencapture'] != true) {
+            perms['hint'] = '沙盒內 screencapture 不可用屬實（無 TCC 條目、外部 binary 被擋）。'
+                '要拍 App 畫面請改用 app_look / app_view（App 自家視網膜，更快更穩）。';
+          }
+          return _jsonRpcResult(id, {'resultType': 'complete', ...perms});
+
+        case 'window_control':
+          final action = args['action'] as String? ?? '';
+          const validActions = ['focus', 'minimize', 'center', 'restore'];
+          if (!validActions.contains(action)) {
+            return _jsonRpcError(id, -32602,
+                'Invalid action: $action. Valid: ${validActions.join("/")}');
+          }
+          try {
+            switch (action) {
+              case 'focus':
+                await windowManager.focus();
+              case 'minimize':
+                await windowManager.minimize();
+              case 'center':
+                await windowManager.center();
+              case 'restore':
+                await windowManager.setSize(const Size(1440, 900));
+                await windowManager.center();
+            }
+            final size = await windowManager.getSize();
+            final position = await windowManager.getPosition();
+            return _jsonRpcResult(id, {
+              'resultType': 'complete',
+              'success': true,
+              'action': action,
+              'after': {
+                'width': size.width.round(),
+                'height': size.height.round(),
+                'x': position.dx.round(),
+                'y': position.dy.round(),
+              },
+            });
+          } catch (e) {
+            return _jsonRpcResult(id, {
+              'resultType': 'complete',
+              'success': false,
+              'action': action,
+              'message': 'window_manager 未初始化或操作失敗: $e',
+            });
+          }
 
         default:
           return _jsonRpcError(id, -32602, 'Unknown tool: $name');

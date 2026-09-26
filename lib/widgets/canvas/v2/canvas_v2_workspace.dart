@@ -408,6 +408,27 @@ class CanvasV2WorkspaceState extends State<CanvasV2Workspace> {
     // 執行工作流 — 接上 WorkflowExecutor
     reg.onExecute = () => _executeWorkflow();
 
+    // [v0.4.0 開光 · 2026-09-26] app_tap——畫布工具列語意點擊。
+    // 與 UI 按鈕同一條程式路徑，零座標模擬。
+    reg.onTapButton = (button) {
+      switch (button) {
+        case 'save':
+          _onSave();
+          return {'success': true, 'button': '存檔'};
+        case 'copy':
+          _onSaveAs();
+          return {'success': true, 'button': '另存'};
+        case 'test':
+          _runStaticTest();
+          return {'success': true, 'button': '測試'};
+        case 'run':
+          _executeWorkflow();
+          return {'success': true, 'button': '執行'};
+        default:
+          return {'success': false, 'message': '未知按鈕: $button'};
+      }
+    };
+
     // [教練 Agent 2026-07-22] Phase C — Agent 快捷操作 callbacks
     reg.onLoadTemplate = (templateName) {
       _loadTemplateByName(templateName);
